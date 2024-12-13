@@ -26,7 +26,7 @@ class _SignupWithEmailViewState extends State<SignupWithEmailView> {
         backgroundColor:
             const Color(0xFFFDF5F7), // Light pink background for AppBar
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context); // Navigates back to the previous screen
           },
@@ -39,7 +39,7 @@ class _SignupWithEmailViewState extends State<SignupWithEmailView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Enter your email address',
               style: TextStyle(
                 fontSize: 20.0,
@@ -47,15 +47,15 @@ class _SignupWithEmailViewState extends State<SignupWithEmailView> {
                 color: Colors.black, // Text color for title
               ),
             ),
-            SizedBox(height: 4),
-            Text(
+            const SizedBox(height: 4),
+            const Text(
               'Please enter your email address to sign up',
               style: TextStyle(
                 fontSize: 14.0,
                 color: Colors.grey, // Text color for subtitle
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Container to wrap the email text field with added padding
             Container(
               decoration: BoxDecoration(
@@ -72,17 +72,17 @@ class _SignupWithEmailViewState extends State<SignupWithEmailView> {
                       _focusNode, // Focus node attached to the text field
                   keyboardType: TextInputType.emailAddress, // Email keyboard
                   autofocus: true, // Ensure the keyboard shows up
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: InputBorder.none, // Remove inner border
                     hintText: 'Email Address',
                     hintStyle: TextStyle(color: Colors.grey), // Hint text color
-                    contentPadding: const EdgeInsets.symmetric(
+                    contentPadding: EdgeInsets.symmetric(
                         vertical: 12.0), // Padding inside the field
                   ),
                 ),
               ),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -100,7 +100,7 @@ class _SignupWithEmailViewState extends State<SignupWithEmailView> {
                   foregroundColor: MaterialStateProperty.all(
                       Colors.white), // Button text color
                 ),
-                child: Text('Continue'),
+                child: const Text('Continue'),
               ),
             ),
           ],

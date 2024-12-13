@@ -26,7 +26,7 @@ class _SignupWithNumberViewState extends State<SignupWithNumberView> {
         backgroundColor:
             const Color(0xFFFDF5F7), // Light pink background for AppBar
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context); // Navigates back to the previous screen
           },
@@ -39,7 +39,7 @@ class _SignupWithNumberViewState extends State<SignupWithNumberView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Enter your phone number',
               style: TextStyle(
                 fontSize: 20.0,
@@ -47,15 +47,15 @@ class _SignupWithNumberViewState extends State<SignupWithNumberView> {
                 color: Colors.black, // Text color for title
               ),
             ),
-            SizedBox(height: 4),
-            Text(
+            const SizedBox(height: 4),
+            const Text(
               'Please enter your phone number',
               style: TextStyle(
                 fontSize: 14.0,
                 color: Colors.grey, // Text color for subtitle
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Container to wrap the dropdown and text field
             Container(
               decoration: BoxDecoration(
@@ -73,7 +73,7 @@ class _SignupWithNumberViewState extends State<SignupWithNumberView> {
                     },
                     dropdownColor: const Color(
                         0xFFFDF5F7), // Light pink background for dropdown options
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Colors.black), // Text color inside dropdown
                     underline:
                         Container(), // Remove the underline (internal border)
@@ -84,7 +84,7 @@ class _SignupWithNumberViewState extends State<SignupWithNumberView> {
                             ))
                         .toList(),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _phoneController,
@@ -92,7 +92,7 @@ class _SignupWithNumberViewState extends State<SignupWithNumberView> {
                           _focusNode, // Focus node attached to the text field
                       keyboardType: TextInputType.phone,
                       autofocus: true, // Ensure the keyboard shows up
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: InputBorder.none, // Remove inner border
                         hintText: 'Phone Number',
                         hintStyle:
@@ -103,7 +103,7 @@ class _SignupWithNumberViewState extends State<SignupWithNumberView> {
                 ],
               ),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -121,7 +121,7 @@ class _SignupWithNumberViewState extends State<SignupWithNumberView> {
                   foregroundColor: MaterialStateProperty.all(
                       Colors.white), // Button text color
                 ),
-                child: Text('Continue'),
+                child: const Text('Continue'),
               ),
             ),
           ],
