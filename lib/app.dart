@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hooked/view/get_started.dart';
+import 'package:hooked/view/get_started_view.dart';
 import 'package:hooked/view/onboarding_view.dart';
+import 'package:hooked/view/signup_with_number_view.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -16,7 +17,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         '/onboard': (context) => const OnboardingScreen(),
-        '/getstarted': (context) => const GetStarted(),
+        '/getstarted': (context) => const GetStartedView(),
+        '/signupnumber': (context) => const SignupWithNumberView(),
       },
     );
   }
