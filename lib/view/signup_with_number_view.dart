@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hooked/view/user_conformation_view.dart';
 
 class SignupWithNumberView extends StatefulWidget {
   const SignupWithNumberView({super.key});
@@ -107,7 +108,12 @@ class _SignupWithNumberViewState extends State<SignupWithNumberView> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Handle continue button press
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UserConformationView(),
+                    ),
+                  );
                 },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all(
