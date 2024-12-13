@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooked/view/get_started_view.dart';
 import 'package:hooked/view/onboarding_view.dart';
+import 'package:hooked/view/signup_with_email_view.dart';
 import 'package:hooked/view/signup_with_number_view.dart';
 
 class MyApp extends StatelessWidget {
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
         '/onboard': (context) => const OnboardingScreen(),
         '/getstarted': (context) => const GetStartedView(),
         '/signupnumber': (context) => const SignupWithNumberView(),
+        '/signupemail': (context) => const SignupWithEmailView(),
       },
     );
   }
