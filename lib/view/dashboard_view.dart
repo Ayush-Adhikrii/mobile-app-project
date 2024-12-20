@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:hooked/view/explore_view.dart';
+import 'package:hooked/view/likes_you_view.dart';
+import 'package:hooked/view/people_view.dart';
+import 'package:hooked/view/profile_view.dart';
+import 'package:hooked/view/text_view.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -8,6 +13,16 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
+  int _selectedIndex = 2;
+
+  List<Widget> lstBottomScreen = [
+    const ProfileView(),
+    const ExploreView(),
+    const PeopleView(),
+    const LikesYouView(),
+    const TextView()
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,36 +48,7 @@ class _DashboardViewState extends State<DashboardView> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Zeus,24',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              // Add a couple of images to display in the body
-              Image.asset(
-                'assets/images/image1.jpg', // Add your first image here
-                fit: BoxFit.cover,
-              ),
-              const SizedBox(height: 20),
-              Image.asset(
-                'assets/images/image2.jpg', // Add your second image here
-                fit: BoxFit.cover,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Some Content Below the Images',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        ),
-      ),
+      body: lstBottomScreen[_selectedIndex],
       // Bottom Navigation Bar with 5 icons
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -78,14 +64,14 @@ class _DashboardViewState extends State<DashboardView> {
               Icons.search,
               color: Colors.black, // Set the icons to solid black
             ),
-            label: 'Search',
+            label: 'Explore',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.home,
               color: Colors.black, // Set the icons to solid black
             ),
-            label: 'Home',
+            label: 'People',
           ),
           BottomNavigationBarItem(
             icon: Icon(
@@ -102,9 +88,14 @@ class _DashboardViewState extends State<DashboardView> {
             label: 'Messages',
           ),
         ],
+        backgroundColor: const Color(0xFFFDF5F7),
+        selectedItemColor: const Color(0xFFE03368),
+        unselectedItemColor: Colors.black,
+        currentIndex: _selectedIndex,
         onTap: (index) {
-          // Handle bottom navigation tap
-          print('Bottom navigation item $index tapped');
+          setState(() {
+            _selectedIndex = index;
+          });
         },
       ),
     );

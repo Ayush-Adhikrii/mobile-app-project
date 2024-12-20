@@ -47,7 +47,7 @@ class _UserConformationViewState extends State<UserConformationView> {
             const Text(
               'Enter verificaton code',
               style: TextStyle(
-                fontSize: 30.0,
+                fontSize: 20.0,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -57,7 +57,7 @@ class _UserConformationViewState extends State<UserConformationView> {
             const Text(
               'Please enter the verification code we sent you.',
               style: TextStyle(
-                fontSize: 10.0,
+                fontSize: 14.0,
                 fontWeight: FontWeight.w100,
                 color: Colors.grey,
               ),

@@ -7,7 +7,7 @@ ThemeData getApplicationTheme() {
     fontFamily: 'Proxima Nova Regular',
     appBarTheme: const AppBarTheme(
         centerTitle: true,
-        // color: Color(0xFFFDF5F7),
+        color: Color(0xFFFDF5F7),
         elevation: 2,
         shadowColor: Colors.grey,
         titleTextStyle: TextStyle(
