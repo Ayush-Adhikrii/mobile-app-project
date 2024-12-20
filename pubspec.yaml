@@ -79,15 +79,15 @@ flutter:
   
     - family: Proxima Nova Regular
       fonts:
-        - asset: asstes/fonts/Proxima-Nova.ttf
+        - asset: assetes/fonts/Proxima-Nova.ttf
 
     - family: Proxima Nova Bold
       fonts:
-        - asset: asstes/fonts/Proxima-Nova-Bold.ttf
+        - asset: assetes/fonts/Proxima-Nova-Bold.ttf
 
     - family: Proxima Nova Italic
       fonts:
-        - asset: asstes/fonts/Proxima-Nova-Italic.ttf
+        - asset: assetes/fonts/Proxima-Nova-Italic.ttf
 
 
   #       - asset: fonts/Schyler-Italic.ttf
