@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:softwarica_student_management_bloc/app/di/di.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view/login_view.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/signup/register_bloc.dart';
-import 'package:softwarica_student_management_bloc/features/splash/presentation/view_model/splash_cubit.dart';
+
+import '../../../../app/di/di.dart';
+import '../../../splash/presentation/view_model/splash_cubit.dart';
+import '../view_model/signup/register_bloc.dart';
+import 'login_view.dart';
 
 class RegisterView extends StatefulWidget {
   final String emailOrPhone;
@@ -31,15 +35,50 @@ class _RegisterViewState extends State<RegisterView> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   DateTime? _birthDate;
-  String? _gender; // No default gender value
+  String? _gender;
+
   final String _starSign = '';
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  File? _profileImage;
 
   @override
   void initState() {
     super.initState();
     _emailOrPhoneController.text = widget.emailOrPhone;
+    _gender = "Male";
+  }
+
+  Widget _buildProfileAvatar() {
+    String imagePath = _gender == 'Female'
+        ? 'assets/images/default_female.png'
+        : _gender == 'Other'
+            ? 'assets/images/default_profile_photo.jpeg'
+            : 'assets/images/default_male.png';
+
+    return GestureDetector(
+      onTap: _pickImage,
+      child: SizedBox(
+        height: 200,
+        width: 200,
+        child: CircleAvatar(
+          radius: 50,
+          backgroundImage: _profileImage != null
+              ? FileImage(_profileImage!)
+              : AssetImage(imagePath) as ImageProvider,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
+    }
   }
 
   String _getStarSign(DateTime birthDate) {
@@ -82,6 +121,8 @@ class _RegisterViewState extends State<RegisterView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Center(child: _buildProfileAvatar()),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _emailOrPhoneController,
                 enabled: false,
@@ -311,8 +352,6 @@ class _RegisterViewState extends State<RegisterView> {
                                 bio: _bioController.text,
                                 userName: widget.emailOrPhone,
                                 password: _passwordController.text,
-                                confirmPassword:
-                                    _confirmPasswordController.text,
                               )
                             : RegisterUser(
                                 context: context,
@@ -324,8 +363,6 @@ class _RegisterViewState extends State<RegisterView> {
                                 bio: _bioController.text,
                                 userName: widget.emailOrPhone,
                                 password: _passwordController.text,
-                                confirmPassword:
-                                    _confirmPasswordController.text,
                               );
                         context.read<RegisterBloc>().add(registerEvent);
                         Navigator.push(
