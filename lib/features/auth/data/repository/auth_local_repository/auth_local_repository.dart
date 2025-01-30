@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:softwarica_student_management_bloc/core/error/failure.dart';
-import 'package:softwarica_student_management_bloc/features/auth/data/data_source/local_data_source/auth_local_datasource.dart';
-import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
-import 'package:softwarica_student_management_bloc/features/auth/domain/repository/auth_repository.dart';
+
+import '../../../../../core/error/failure.dart';
+import '../../../domain/entity/auth_entity.dart';
+import '../../data_source/local_data_source/auth_local_datasource.dart';
+import '../auth_repository.dart';
 
 class AuthLocalRepository implements IAuthRepository {
   final AuthLocalDataSource _authLocalDataSource;
@@ -35,9 +36,9 @@ class AuthLocalRepository implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> registerUser(AuthEntity student) async {
+  Future<Either<Failure, void>> registerUser(AuthEntity user) async {
     try {
-      return Right(_authLocalDataSource.registerUser(student));
+      return Right(_authLocalDataSource.registerUser(user));
     } catch (e) {
       return Left(LocalDatabaseFailure(message: e.toString()));
     }
