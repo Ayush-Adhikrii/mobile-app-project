@@ -2,8 +2,8 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:softwarica_student_management_bloc/app/usecase/usecase.dart';
 import 'package:softwarica_student_management_bloc/core/error/failure.dart';
+import 'package:softwarica_student_management_bloc/features/auth/data/repository/auth_repository.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
-import 'package:softwarica_student_management_bloc/features/auth/domain/repository/auth_repository.dart';
 
 class RegisterUserParams extends Equatable {
   final String name;
@@ -18,6 +18,19 @@ class RegisterUserParams extends Equatable {
   final String? profilePhoto;
 
   const RegisterUserParams({
+    required this.name,
+    this.email,
+    this.phoneNumber,
+    required this.userName,
+    required this.password,
+    this.gender,
+    this.birthDate,
+    this.starSign,
+    this.bio,
+    this.profilePhoto,
+  });
+
+  const RegisterUserParams.initial({
     required this.name,
     this.email,
     this.phoneNumber,
