@@ -1,11 +1,12 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:softwarica_student_management_bloc/core/common/snackbar/my_snackbar.dart';
-import 'package:softwarica_student_management_bloc/features/auth/domain/use_case/login_usecase.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/signup/register_bloc.dart';
-import 'package:softwarica_student_management_bloc/features/home/presentation/view/home_view.dart';
-import 'package:softwarica_student_management_bloc/features/home/presentation/view_model/home_cubit.dart';
+
+import '../../../../../core/common/snackbar/my_snackbar.dart';
+import '../../../../home/presentation/view/home_view.dart';
+import '../../../../home/presentation/view_model/home_cubit.dart';
+import '../../../domain/use_case/login_usecase.dart';
+import '../signup/register_bloc.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
