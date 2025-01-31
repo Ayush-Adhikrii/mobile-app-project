@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../app/di/di.dart';
+import '../../../../core/common/snackbar/my_snackbar.dart';
 import '../../../splash/presentation/view_model/splash_cubit.dart';
 import '../view_model/signup/register_bloc.dart';
 import 'login_view.dart';
@@ -27,6 +29,8 @@ class RegisterView extends StatefulWidget {
 class _RegisterViewState extends State<RegisterView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailOrPhoneController = TextEditingController();
+  final TextEditingController _emailOrPhoneController2 =
+      TextEditingController();
   final TextEditingController _starSignController = TextEditingController();
 
   final TextEditingController _nameController = TextEditingController();
@@ -37,7 +41,6 @@ class _RegisterViewState extends State<RegisterView> {
   DateTime? _birthDate;
   String? _gender;
 
-  final String _starSign = '';
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   File? _profileImage;
@@ -49,35 +52,31 @@ class _RegisterViewState extends State<RegisterView> {
     _gender = "Male";
   }
 
-  Widget _buildProfileAvatar() {
-    String imagePath = _gender == 'Female'
-        ? 'assets/images/default_female.png'
-        : _gender == 'Other'
-            ? 'assets/images/default_profile_photo.jpeg'
-            : 'assets/images/default_male.png';
-
-    return GestureDetector(
-      onTap: _pickImage,
-      child: SizedBox(
-        height: 200,
-        width: 200,
-        child: CircleAvatar(
-          radius: 50,
-          backgroundImage: _profileImage != null
-              ? FileImage(_profileImage!)
-              : AssetImage(imagePath) as ImageProvider,
-        ),
-      ),
-    );
+  Future<void> checkCameraPermission() async {
+    if (await Permission.camera.request().isRestricted ||
+        await Permission.camera.request().isDenied) {
+      await Permission.camera.request();
+    }
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _profileImage = File(pickedFile.path);
-      });
+  Future _browseImage(ImageSource imageSource) async {
+    try {
+      final image = await ImagePicker().pickImage(source: imageSource);
+      if (image != null) {
+        setState(() {
+          _profileImage = File(image.path);
+          print("Picked image: ${_profileImage?.path}");
+
+          // Send image to server
+          context.read<RegisterBloc>().add(
+                UploadImage(file: _profileImage!),
+              );
+        });
+      } else {
+        return;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
     }
   }
 
@@ -121,22 +120,67 @@ class _RegisterViewState extends State<RegisterView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: _buildProfileAvatar()),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _emailOrPhoneController,
-                enabled: false,
-                decoration: InputDecoration(
-                  labelText: widget.isEmail ? "Email" : "Phone Number",
+              Center(
+                child: InkWell(
+                  onTap: () {
+                    showModalBottomSheet(
+                      backgroundColor: Colors.grey[300],
+                      context: context,
+                      isScrollControlled: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
+                      ),
+                      builder: (context) => Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                checkCameraPermission();
+                                _browseImage(ImageSource.camera);
+                                Navigator.pop(context);
+                              },
+                              icon: const Icon(Icons.camera),
+                              label: const Text('Camera'),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                _browseImage(ImageSource.gallery);
+                                Navigator.pop(context);
+                              },
+                              icon: const Icon(Icons.image),
+                              label: const Text('Gallery'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  child: SizedBox(
+                    height: 200,
+                    width: 200,
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundImage: _profileImage != null
+                          ? FileImage(_profileImage!)
+                          : (_gender == 'Female'
+                                  ? const AssetImage(
+                                      'assets/images/default_female.png')
+                                  : _gender == 'Other'
+                                      ? const AssetImage(
+                                          'assets/images/default_profile.png')
+                                      : const AssetImage(
+                                          'assets/images/default_male.png'))
+                              as ImageProvider,
+                    ),
+                  ),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter your ${widget.isEmail ? 'email' : 'phone number'}.";
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 16),
+
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -239,6 +283,33 @@ class _RegisterViewState extends State<RegisterView> {
               ),
               const SizedBox(height: 16),
               TextFormField(
+                controller: _emailOrPhoneController,
+                enabled: false,
+                decoration: InputDecoration(
+                  labelText: widget.isEmail ? "Email" : "Phone Number",
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please enter your ${widget.isEmail ? 'email' : 'phone number'}.";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailOrPhoneController2,
+                decoration: InputDecoration(
+                  labelText: widget.isEmail ? "Phone Number" : "Email",
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please enter your ${widget.isEmail ? 'phone number' : 'email'}.";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
                 controller: _bioController,
                 maxLines: 3, // Increased text area
                 decoration: const InputDecoration(
@@ -338,13 +409,22 @@ class _RegisterViewState extends State<RegisterView> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      debugPrint(_confirmPasswordController.text);
-
                       if (_formKey.currentState!.validate()) {
-                        final registerEvent = widget.isEmail
-                            ? RegisterUser(
+                        final registerState =
+                            context.read<RegisterBloc>().state;
+                        final imageName = registerState.imageName;
+                        print(
+                            "Image name before trigguring registerbloc: $imageName");
+
+                        context.read<RegisterBloc>().add(
+                              RegisterUser(
                                 context: context,
-                                email: widget.emailOrPhone,
+                                email: widget.isEmail
+                                    ? widget.emailOrPhone
+                                    : _emailOrPhoneController2.text,
+                                phoneNumber: widget.isEmail
+                                    ? _emailOrPhoneController2.text
+                                    : widget.emailOrPhone,
                                 name: _nameController.text,
                                 gender: _gender ?? '',
                                 birthDate: _birthDate!,
@@ -352,19 +432,10 @@ class _RegisterViewState extends State<RegisterView> {
                                 bio: _bioController.text,
                                 userName: widget.emailOrPhone,
                                 password: _passwordController.text,
-                              )
-                            : RegisterUser(
-                                context: context,
-                                phoneNumber: widget.emailOrPhone,
-                                name: _nameController.text,
-                                gender: _gender ?? '',
-                                birthDate: _birthDate!,
-                                starSign: _starSignController.text,
-                                bio: _bioController.text,
-                                userName: widget.emailOrPhone,
-                                password: _passwordController.text,
-                              );
-                        context.read<RegisterBloc>().add(registerEvent);
+                                profilePhoto: imageName,
+                              ),
+                            );
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -373,6 +444,11 @@ class _RegisterViewState extends State<RegisterView> {
                               child: LoginView(),
                             ),
                           ),
+                        );
+                        showMySnackBar(
+                          context: context,
+                          message: 'User created Successfully',
+                          color: Colors.green,
                         );
                       }
                     },

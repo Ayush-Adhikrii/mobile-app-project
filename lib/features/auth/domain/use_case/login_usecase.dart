@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import 'package:softwarica_student_management_bloc/app/usecase/usecase.dart';
-import 'package:softwarica_student_management_bloc/core/error/failure.dart';
-import 'package:softwarica_student_management_bloc/features/auth/data/repository/auth_repository.dart';
 
 import '../../../../app/shared_prefs/token_shared_prefs.dart';
+import '../../../../app/usecase/usecase.dart';
+import '../../../../core/error/failure.dart';
+import '../repository/auth_repository.dart';
 
 class LoginParams extends Equatable {
   final String username;

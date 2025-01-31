@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:softwarica_student_management_bloc/features/auth/data/data_source/auth_data_source.dart';
-import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
 
 import '../../../../../app/constants/api_endpoints.dart';
+import '../../../domain/entity/auth_entity.dart';
+import '../auth_data_source.dart';
 
 class AuthRemoteDataSource implements IAuthDataSource {
   final Dio _dio;
@@ -21,7 +21,7 @@ class AuthRemoteDataSource implements IAuthDataSource {
       userName: "",
       password: "",
       gender: null,
-      birthDate: null,
+      // birthDate: null,
       starSign: null,
       bio: null,
       profilePhoto: null,
@@ -61,11 +61,11 @@ class AuthRemoteDataSource implements IAuthDataSource {
           "name": user.name,
           "gender": user.gender,
           "email": user.email,
-          "birthDate": user.birthDate,
+          // "birthDate": user.birthDate,
           "starSign": user.starSign,
           "bio": user.bio,
           "phoneNumber": user.phoneNumber,
-          "username": user.userName,
+          "userName": user.userName,
           "password": user.password,
           "profilePhoto": user.profilePhoto,
         },

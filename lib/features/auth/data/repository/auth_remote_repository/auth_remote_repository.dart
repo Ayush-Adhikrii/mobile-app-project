@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:softwarica_student_management_bloc/core/error/failure.dart';
-import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
-import 'package:softwarica_student_management_bloc/features/auth/domain/repository/auth_repository.dart';
 
+import '../../../../../core/error/failure.dart';
+import '../../../domain/entity/auth_entity.dart';
+import '../../../domain/repository/auth_repository.dart';
 import '../../data_source/remote_data_source/auth_remote_data_source.dart';
 
 class AuthRemoteRepository implements IAuthRepository {

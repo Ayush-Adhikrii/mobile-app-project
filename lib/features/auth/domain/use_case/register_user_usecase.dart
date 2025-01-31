@@ -1,9 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import 'package:softwarica_student_management_bloc/app/usecase/usecase.dart';
-import 'package:softwarica_student_management_bloc/core/error/failure.dart';
-import 'package:softwarica_student_management_bloc/features/auth/data/repository/auth_repository.dart';
-import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
+
+import '../../../../app/usecase/usecase.dart';
+import '../../../../core/error/failure.dart';
+import '../entity/auth_entity.dart';
+import '../repository/auth_repository.dart';
 
 class RegisterUserParams extends Equatable {
   final String name;

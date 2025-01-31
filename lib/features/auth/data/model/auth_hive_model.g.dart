@@ -2,9 +2,9 @@
 
 part of 'auth_hive_model.dart';
 
-// ************************************************************************** 
-// TypeAdapterGenerator 
-// ************************************************************************** 
+// **************************************************************************
+// TypeAdapterGenerator
+// **************************************************************************
 
 class AuthHiveModelAdapter extends TypeAdapter<AuthHiveModel> {
   @override
@@ -17,7 +17,7 @@ class AuthHiveModelAdapter extends TypeAdapter<AuthHiveModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return AuthHiveModel(
-      userId: fields[0] as String?, // Changed studentId to userId
+      userId: fields[0] as String?,
       name: fields[1] as String,
       email: fields[2] as String?,
       phoneNumber: fields[3] as String?,
@@ -34,9 +34,9 @@ class AuthHiveModelAdapter extends TypeAdapter<AuthHiveModel> {
   @override
   void write(BinaryWriter writer, AuthHiveModel obj) {
     writer
-      ..writeByte(11) // Updated field count to match total fields
+      ..writeByte(11)
       ..writeByte(0)
-      ..write(obj.userId) // Changed studentId to userId
+      ..write(obj.userId)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)

@@ -148,8 +148,6 @@ class _LoginViewState extends State<LoginView> {
                                       password: _passwordController.text,
                                     ),
                                   );
-
-                             
                             }
                           },
                         ),

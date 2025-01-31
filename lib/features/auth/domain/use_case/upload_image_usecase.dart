@@ -4,7 +4,7 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../app/usecase/usecase.dart';
 import '../../../../core/error/failure.dart';
-import '../../data/repository/auth_repository.dart';
+import '../repository/auth_repository.dart';
 
 class UploadImageParams {
   final File file;

@@ -29,6 +29,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     Emitter<RegisterState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
+    // String? profilePhoto = state.profilePhoto;
+    // print("hi $profilePhoto");
+
     final result = await _registerUseCase.call(RegisterUserParams(
       name: event.name,
       email: event.email,
@@ -36,10 +39,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       userName: event.userName,
       password: event.password,
       gender: event.gender,
-      birthDate: event.birthDate,
+      // birthDate: event.birthDate,
       starSign: event.starSign,
       bio: event.bio,
-      profilePhoto: event.profilePhoto,
+      profilePhoto: state.imageName,
     ));
 
     result.fold(
