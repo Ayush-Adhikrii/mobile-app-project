@@ -11,11 +11,11 @@ part 'register_event.dart';
 part 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
-  final RegisterUseCase _registerUseCase;
+  final RegisterUsecase _registerUseCase;
   final UploadImageUsecase _uploadImageUsecase;
 
   RegisterBloc({
-    required RegisterUseCase registerUseCase,
+    required RegisterUsecase registerUseCase,
     required UploadImageUsecase uploadImageUsecase,
   })  : _registerUseCase = registerUseCase,
         _uploadImageUsecase = uploadImageUsecase,
