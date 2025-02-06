@@ -9,19 +9,20 @@ import '../repository/auth_repository.dart';
 class UploadImageParams {
   final File file;
 
-  const UploadImageParams({
-    required this.file,
-  });
+  const UploadImageParams({required this.file});
+
+  // Corrected empty constructor
+  static UploadImageParams empty = UploadImageParams(file: File(''));
 }
 
 class UploadImageUsecase
     implements UsecaseWithParams<String, UploadImageParams> {
-  final IAuthRepository _repository;
+  final IAuthRepository repository;
 
-  UploadImageUsecase(this._repository);
+  UploadImageUsecase({required this.repository});
 
   @override
   Future<Either<Failure, String>> call(UploadImageParams params) {
-    return _repository.uploadProfilePicture(params.file);
+    return repository.uploadProfilePicture(params.file);
   }
 }

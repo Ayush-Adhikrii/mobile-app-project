@@ -44,6 +44,18 @@ class RegisterUserParams extends Equatable {
     this.profilePhoto,
   });
 
+  const RegisterUserParams.empty()
+      : name = 'empty_user_id',
+        email = 'empty_user_email',
+        phoneNumber = 'empty_user_phonenumber',
+        gender = 'empty_user_gender',
+        birthDate = null,
+        starSign = 'empty_user_starsign',
+        bio = 'empty_user_bio',
+        userName = 'empty_user_username',
+        password = 'empty_user_password',
+        profilePhoto = 'empty_user_photo';
+
   @override
   List<Object?> get props => [
         name,
@@ -58,10 +70,10 @@ class RegisterUserParams extends Equatable {
       ];
 }
 
-class RegisterUseCase implements UsecaseWithParams<void, RegisterUserParams> {
+class RegisterUsecase implements UsecaseWithParams<void, RegisterUserParams> {
   final IAuthRepository repository;
 
-  RegisterUseCase(this.repository);
+  RegisterUsecase({required this.repository});
 
   @override
   Future<Either<Failure, void>> call(RegisterUserParams params) {
