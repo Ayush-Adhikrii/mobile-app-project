@@ -37,7 +37,7 @@ void main() {
     verifyNoMoreInteractions(repository);
   });
 
-  test('should call upload image', () async {
+  test('should call upload image(fail)', () async {
     when(() => repository.uploadProfilePicture(any())).thenAnswer(
       (_) async => Right("image name"),
     );
