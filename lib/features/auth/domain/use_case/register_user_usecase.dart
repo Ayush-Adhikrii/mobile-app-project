@@ -70,10 +70,10 @@ class RegisterUserParams extends Equatable {
       ];
 }
 
-class RegisterUsecase implements UsecaseWithParams<void, RegisterUserParams> {
+class RegisterUseCase implements UsecaseWithParams<void, RegisterUserParams> {
   final IAuthRepository repository;
 
-  RegisterUsecase({required this.repository});
+  RegisterUseCase(this.repository);
 
   @override
   Future<Either<Failure, void>> call(RegisterUserParams params) {

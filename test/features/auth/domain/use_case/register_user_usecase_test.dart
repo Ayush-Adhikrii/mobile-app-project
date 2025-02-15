@@ -12,11 +12,11 @@ class FakeFile extends Fake implements File {}
 
 void main() {
   late MockUserRepository repository;
-  late RegisterUsecase usecase;
+  late RegisterUseCase usecase;
 
   setUp(() {
     repository = MockUserRepository();
-    usecase = RegisterUsecase(repository: repository);
+    usecase = RegisterUseCase(repository: repository);
     registerFallbackValue(AuthEntity.empty());
   });
 

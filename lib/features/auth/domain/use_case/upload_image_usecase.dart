@@ -17,12 +17,12 @@ class UploadImageParams {
 
 class UploadImageUsecase
     implements UsecaseWithParams<String, UploadImageParams> {
-  final IAuthRepository repository;
+  final IAuthRepository _repository;
 
-  UploadImageUsecase({required this.repository});
+  UploadImageUsecase(this._repository);
 
   @override
   Future<Either<Failure, String>> call(UploadImageParams params) {
-    return repository.uploadProfilePicture(params.file);
+    return _repository.uploadProfilePicture(params.file);
   }
 }
