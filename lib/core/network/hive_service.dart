@@ -3,7 +3,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../app/constants/hive_table_constant.dart';
 import '../../features/auth/data/model/auth_hive_model.dart';
-
+import '../../features/user_details/data/model/user_details_hive_model.dart';
 
 class HiveService {
   static Future<void> init() async {
@@ -63,6 +63,33 @@ class HiveService {
   // Clear user Box
   Future<void> clearUserBox() async {
     await Hive.deleteBoxFromDisk(HiveTableConstant.userBox);
+  }
+
+  //for user details
+
+  Future<void> addUserDetails(UserDetailsHiveModel userDetails) async {
+    try {
+      final box = await Hive.openBox<UserDetailsHiveModel>('userDetailsBox');
+      await box.put(userDetails.userId, userDetails); // Use userId as the key
+    } catch (e) {
+      print('Error adding user details: $e');
+      rethrow;
+    }
+  }
+
+  Future<UserDetailsHiveModel?> getUserDetails() async {
+    try {
+      final box = await Hive.openBox<UserDetailsHiveModel>('userDetailsBox');
+      // Assuming you are only storing one user details, you can fetch it like this:
+      if (box.isNotEmpty) {
+        return box.values.first;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error getting user details: $e');
+      rethrow;
+    }
   }
 
   Future<void> close() async {

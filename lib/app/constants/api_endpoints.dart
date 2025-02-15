@@ -17,10 +17,9 @@ class ApiEndpoints {
   // ====================== Auth Routes ======================
   static const String login = "user/login";
   static const String register = "user";
-  // static const String getAllStudent = "auth/getAllStudents";
-  // static const String getStudentsByBatch = "auth/getStudentsByBatch/";
-  // static const String getStudentsByCourse = "auth/getStudentsByCourse/";
-  // static const String updateStudent = "auth/updateStudent/";
-  // static const String deleteStudent = "auth/deleteStudent/";
   static const String uploadImage = "user/uploadImage";
+
+  // ====================== User Details Routes ======================
+  static const String addUserDetails = "details";
+  static const String getUserDetails = "details/getUserDetails";
 }

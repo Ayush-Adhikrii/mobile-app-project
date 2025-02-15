@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../../core/error/failure.dart';
 import '../../../domain/entity/user_details_entity.dart';
-import '../../../domain/repository/user_details_repository.dart'; // Ensure this is the correct import path for your repository interface
+import '../../../domain/repository/user_details_repository.dart';
 import '../../data_source/remote_data_source/user_details_remote_data_source.dart';
 
 class UserDetailsRemoteRepository implements IUserDetailsRepository {
