@@ -8,4 +8,8 @@ class HiveTableConstant {
   //user details table
   static const int userDetailsTableId = 1;
   static const String duserDetailsBox = 'userDetailsBox';
+
+  //preference table
+  static const int preferenceTableId = 2;
+  static const String preferenceBox = 'preferenceBox';
 }

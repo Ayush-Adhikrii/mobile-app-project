@@ -1,14 +1,15 @@
 import 'package:equatable/equatable.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:softwarica_student_management_bloc/app/constants/hive_table_constant.dart';
-import 'package:softwarica_student_management_bloc/features/user_details/domain/entity/user_details_entity.dart';
+
+import '../../../../app/constants/hive_table_constant.dart';
+import '../../domain/entity/user_details_entity.dart';
 
 part 'user_details_hive_model.g.dart';
 
 @HiveType(typeId: HiveTableConstant.userDetailsTableId)
 class UserDetailsHiveModel extends Equatable {
   @HiveField(0)
-  final String userId; // Changed from String? to String (non-nullable)
+  final String userId;
   @HiveField(1)
   final String? profession;
   @HiveField(2)
