@@ -7,8 +7,6 @@ import '../../core/network/hive_service.dart';
 import '../../features/auth/data/data_source/remote_data_source/auth_remote_data_source.dart';
 import '../../features/auth/data/repository/auth_remote_repository/auth_remote_repository.dart';
 import '../../features/auth/domain/use_case/login_usecase.dart';
-import '../../features/auth/domain/use_case/register_user_usecase.dart';
-import '../../features/auth/domain/use_case/upload_image_usecase.dart';
 import '../../features/auth/presentation/view_model/login/login_bloc.dart';
 import '../../features/auth/presentation/view_model/signup/register_bloc.dart';
 import '../../features/home/presentation/view_model/home_cubit.dart';
@@ -71,15 +69,18 @@ _initRegisterDependencies() {
   //   () => RegisterUseCase(getIt<AuthLocalRepository>()),
   // );
   //remote
-  getIt.registerLazySingleton<RegisterUsecase>(
-    () => RegisterUsecase(
-      getIt<AuthRemoteRepository>(),
-    ),
-  );
+  //uncomment
+  // getIt.registerLazySingleton<RegisterUsecase>(
+  //   () => RegisterUsecase(
+  //     getIt<AuthRemoteRepository>(),
+  //   ),
+  // );
 
-  getIt.registerLazySingleton<UploadImageUsecase>(
-    () => UploadImageUsecase(getIt<AuthRemoteRepository>()),
-  );
+  // getIt.registerLazySingleton<UploadImageUsecase>(
+  //   () => UploadImageUsecase(getIt<AuthRemoteRepository>()),
+  // );
+
+  //pugyoo
 
   getIt.registerFactory<RegisterBloc>(
     () => RegisterBloc(
