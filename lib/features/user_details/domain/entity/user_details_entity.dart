@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class UserDetails extends Equatable {
+class UserDetailsEntity extends Equatable {
   final String userId;
   final String? profession;
   final String? education;
@@ -11,7 +11,7 @@ class UserDetails extends Equatable {
   final String? kids;
   final String? religion;
 
-  const UserDetails({
+  const UserDetailsEntity({
     required this.userId,
     this.profession,
     this.education,
@@ -23,7 +23,7 @@ class UserDetails extends Equatable {
     this.religion,
   });
 
-  const UserDetails.empty()
+  const UserDetailsEntity.empty()
       : userId = 'empty_user_id',
         profession = 'empty_profession',
         education = 'empty_education',
