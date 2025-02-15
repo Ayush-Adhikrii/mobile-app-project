@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:softwarica_student_management_bloc/core/network/hive_service.dart';
-import 'package:softwarica_student_management_bloc/features/auth/data/data_source/auth_data_source.dart';
-import 'package:softwarica_student_management_bloc/features/auth/data/model/auth_hive_model.dart';
-import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
+import '../../../../../core/network/hive_service.dart';
+import '../../../domain/entity/auth_entity.dart';
+import '../../model/auth_hive_model.dart';
+import '../auth_data_source.dart';
 
 class AuthLocalDataSource implements IAuthDataSource {
   final HiveService _hiveService;
