@@ -24,10 +24,10 @@ class AuthHiveModelAdapter extends TypeAdapter<AuthHiveModel> {
       userName: fields[4] as String,
       password: fields[5] as String,
       gender: fields[6] as String?,
-      birthDate: fields[7] as DateTime?,
+      birthDate: fields[7] as String?,
       starSign: fields[8] as String?,
       bio: fields[9] as String?,
-      profilePhoto: fields[10] as String,
+      profilePhoto: fields[10] as String?,
     );
   }
 

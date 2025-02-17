@@ -13,7 +13,7 @@ class RegisterUserParams extends Equatable {
   final String userName;
   final String password;
   final String? gender;
-  final DateTime? birthDate;
+  final String? birthDate;
   final String? starSign;
   final String? bio;
   final String? profilePhoto;

@@ -39,7 +39,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       userName: event.userName,
       password: event.password,
       gender: event.gender,
-      // birthDate: event.birthDate, // Uncomment if needed
+      birthDate: event.birthDate,
       starSign: event.starSign,
       bio: event.bio,
       // Pass the extracted filename from image upload as the profile photo

@@ -257,7 +257,8 @@ class _RegisterViewState extends State<RegisterView> {
                 onTap: () async {
                   final pickedDate = await showDatePicker(
                     context: context,
-                    initialDate: DateTime.now(),
+                    initialDate:
+                        DateTime.now().subtract(const Duration(days: 365 * 16)),
                     firstDate: DateTime(1980),
                     lastDate: DateTime.now(),
                   );
@@ -417,6 +418,10 @@ class _RegisterViewState extends State<RegisterView> {
                             context.read<RegisterBloc>().state;
                         final imageName = registerState.imageName;
 
+                        print("birthday $_birthDate");
+                        final formattedBirthDate =
+                            DateFormat('yyyy-MM-dd').format(_birthDate!);
+
                         // Proceed with registration
                         context.read<RegisterBloc>().add(
                               RegisterUser(
@@ -429,7 +434,7 @@ class _RegisterViewState extends State<RegisterView> {
                                     : widget.emailOrPhone,
                                 name: _nameController.text,
                                 gender: _gender ?? '',
-                                birthDate: _birthDate!,
+                                birthDate: formattedBirthDate,
                                 starSign: _starSignController.text,
                                 bio: _bioController.text,
                                 userName: widget.emailOrPhone,

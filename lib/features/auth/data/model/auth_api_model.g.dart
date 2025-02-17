@@ -14,9 +14,7 @@ AuthApiModel _$AuthApiModelFromJson(Map<String, dynamic> json) => AuthApiModel(
       userName: json['userName'] as String,
       password: json['password'] as String,
       gender: json['gender'] as String?,
-      birthDate: json['birthDate'] == null
-          ? null
-          : DateTime.parse(json['birthDate'] as String),
+      birthDate: json['birthDate'] as String?,
       starSign: json['starSign'] as String?,
       bio: json['bio'] as String?,
       profilePhoto: json['profilePhoto'] as String?,
@@ -31,7 +29,7 @@ Map<String, dynamic> _$AuthApiModelToJson(AuthApiModel instance) =>
       'userName': instance.userName,
       'password': instance.password,
       'gender': instance.gender,
-      'birthDate': instance.birthDate?.toIso8601String(),
+      'birthDate': instance.birthDate,
       'starSign': instance.starSign,
       'bio': instance.bio,
       'profilePhoto': instance.profilePhoto,

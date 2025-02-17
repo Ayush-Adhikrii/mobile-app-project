@@ -62,7 +62,7 @@ class AuthRemoteDataSource implements IAuthDataSource {
           "name": user.name,
           "gender": user.gender,
           "email": user.email,
-          // "birthDate": user.birthDate,
+          "birthDate": user.birthDate,
           "starSign": user.starSign,
           "bio": user.bio,
           "phoneNumber": user.phoneNumber,

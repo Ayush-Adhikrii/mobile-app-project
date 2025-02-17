@@ -23,7 +23,7 @@ class AuthHiveModel extends Equatable {
   @HiveField(6)
   final String? gender;
   @HiveField(7)
-  final DateTime? birthDate;
+  final String? birthDate;
   @HiveField(8)
   final String? starSign;
   @HiveField(9)
