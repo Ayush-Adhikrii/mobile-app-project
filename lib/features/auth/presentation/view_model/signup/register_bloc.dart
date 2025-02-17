@@ -25,13 +25,12 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     on<UploadImage>(_onLoadImage);
   }
 
+  // Registration event: uses the stored imageName (filename) for the profile photo
   void _onRegisterEvent(
     RegisterUser event,
     Emitter<RegisterState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    // String? profilePhoto = state.profilePhoto;
-    // print("hi $profilePhoto");
 
     final result = await _registerUseCase.call(RegisterUserParams(
       name: event.name,
@@ -40,9 +39,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       userName: event.userName,
       password: event.password,
       gender: event.gender,
-      // birthDate: event.birthDate,
+      // birthDate: event.birthDate, // Uncomment if needed
       starSign: event.starSign,
       bio: event.bio,
+      // Pass the extracted filename from image upload as the profile photo
       profilePhoto: state.imageName,
     ));
 
@@ -58,6 +58,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     );
   }
 
+  // Upload image event: extracts the filename from the upload API response
   void _onLoadImage(
     UploadImage event,
     Emitter<RegisterState> emit,
@@ -72,7 +73,13 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     result.fold(
       (l) => emit(state.copyWith(isLoading: false, isSuccess: false)),
       (r) {
-        emit(state.copyWith(isLoading: false, isSuccess: true, imageName: r));
+        // 'r' should be the filename extracted from your API response
+        emit(state.copyWith(
+          isLoading: false,
+          isSuccess: true,
+          imageName: r, // Save the filename in the state
+        ));
+        print("Extracted filename: $r");
       },
     );
   }

@@ -23,7 +23,7 @@ class AuthLocalDataSource implements IAuthDataSource {
       birthDate: null,
       starSign: null,
       bio: null,
-      profilePhoto: null,
+      profilePhoto: "",
     ));
   }
 

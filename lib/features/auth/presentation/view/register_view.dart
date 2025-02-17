@@ -62,6 +62,8 @@ class _RegisterViewState extends State<RegisterView> {
   Future _browseImage(ImageSource imageSource) async {
     try {
       final image = await ImagePicker().pickImage(source: imageSource);
+
+      print("Picked file from ImagePicker: $image");
       if (image != null) {
         setState(() {
           _profileImage = File(image.path);
@@ -408,14 +410,14 @@ class _RegisterViewState extends State<RegisterView> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
+                        // First, ensure image upload completes before registering
                         final registerState =
                             context.read<RegisterBloc>().state;
                         final imageName = registerState.imageName;
-                        print(
-                            "Image name before trigguring registerbloc: $imageName");
 
+                        // Proceed with registration
                         context.read<RegisterBloc>().add(
                               RegisterUser(
                                 context: context,

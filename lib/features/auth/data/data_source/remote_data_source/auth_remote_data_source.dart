@@ -24,7 +24,7 @@ class AuthRemoteDataSource implements IAuthDataSource {
       // birthDate: null,
       starSign: null,
       bio: null,
-      profilePhoto: null,
+      profilePhoto: "",
     ));
   }
 
@@ -55,6 +55,7 @@ class AuthRemoteDataSource implements IAuthDataSource {
   @override
   Future<void> registerUser(AuthEntity user) async {
     try {
+      print("User: ${user.profilePhoto}");
       Response response = await _dio.post(
         ApiEndpoints.register,
         data: {
@@ -103,8 +104,8 @@ class AuthRemoteDataSource implements IAuthDataSource {
 
       if (response.statusCode == 200) {
         // Extract the image name from the response
-        final str = response.data['data'];
-
+        final str = response.data['filename'];
+        print("Image name: $str");
         return str;
       } else {
         throw Exception(response.statusMessage);
