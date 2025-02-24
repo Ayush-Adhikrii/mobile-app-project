@@ -29,12 +29,12 @@ class AuthRemoteDataSource implements IAuthDataSource {
   }
 
   @override
-  Future<String> loginUser(String username, String password) async {
+  Future<String> loginUser(String userName, String password) async {
     try {
       Response response = await _dio.post(
         ApiEndpoints.login,
         data: {
-          "username": username,
+          "userName": userName,
           "password": password,
         },
       );
