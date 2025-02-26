@@ -9,7 +9,7 @@ class UserDetailsLocalDataSource implements IUserDetailsDataSource {
   UserDetailsLocalDataSource(this._hiveService);
 
   @override
-  Future<void> addDetails(UserDetailsEntity details) async {
+  Future<void> addUserDetails(UserDetailsEntity details) async {
     try {
       final userDetailsHiveModel = UserDetailsHiveModel.fromEntity(details);
       await _hiveService.addUserDetails(userDetailsHiveModel);
@@ -33,5 +33,11 @@ class UserDetailsLocalDataSource implements IUserDetailsDataSource {
     } catch (e) {
       return Future.error(e);
     }
+  }
+  
+  @override
+  Future<void> updateUserDetails(String userId, String key, String value) {
+    // TODO: implement updateUserDetails
+    throw UnimplementedError();
   }
 }
