@@ -1,57 +1,43 @@
-import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
+// lib/features/user_details/presentation/view_model/bloc/user_details_bloc.dart
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../core/common/snackbar/my_snackbar.dart';
-import '../../../domain/use_case/user_details_use_case.dart';
-
-part 'user_details_event.dart';
-part 'user_details_state.dart';
+import '../../../../../app/di/di.dart';
+import '../../../../auth/presentation/view_model/login/login_bloc.dart';
+import '../../../domain/use_case/get_user_details_use_case.dart';
+import '../../../domain/use_case/update_user_details_use_case.dart';
+import 'user_details_event.dart';
+import 'user_details_state.dart';
 
 class UserDetailsBloc extends Bloc<UserDetailsEvent, UserDetailsState> {
-  final UserDetailsUseCase _addUserDetailsUseCase;
+  final GetUserDetailsUseCase getUserDetailsUseCase;
+  final UpdateUserDetailsUseCase updateUserDetailsUseCase;
 
   UserDetailsBloc({
-    required UserDetailsUseCase addUserDetailsUseCase,
-  })  : _addUserDetailsUseCase = addUserDetailsUseCase,
-        super(UserDetailsState.initial()) {
-    on<UserDetails>(_onAddUserDetailsEvent);
-  }
+    required this.getUserDetailsUseCase,
+    required this.updateUserDetailsUseCase,
+  }) : super(const UserDetailsInitial()) {
+    on<FetchUserDetails>((event, emit) async {
+      emit(const UserDetailsLoading());
+      final result = await getUserDetailsUseCase(userId: event.userId);
+      emit(result.fold(
+        (failure) => UserDetailsError(failure.message),
+        (userDetails) => UserDetailsLoaded(userDetails),
+      ));
+    });
 
-  void _onAddUserDetailsEvent(
-    UserDetails event,
-    Emitter<UserDetailsState> emit,
-  ) async {
-    emit(state.copyWith(isLoading: true));
-
-    final result = await _addUserDetailsUseCase.call(AddUserDetailsParams(
-      userId: 'some_user_id',
-      profession: event.profession,
-      education: event.education,
-      height: event.height,
-      exercise: event.exercise,
-      drinks: event.drinks,
-      smoke: event.smoke,
-      kids: event.kids,
-      religion: event.religion,
-    ));
-
-    result.fold(
-      (failure) {
-        emit(state.copyWith(isLoading: false, isSuccess: false));
-        showMySnackBar(
-          color: Colors.red,
-          context: event.context,
-          message: "Failed to add user details",
-        );
-      },
-      (success) {
-        emit(state.copyWith(isLoading: false, isSuccess: true));
-        showMySnackBar(
-          context: event.context,
-          message: "User details added successfully",
-        );
-      },
-    );
+    on<UpdateUserDetails>((event, emit) async {
+      emit(const UserDetailsLoading());
+      final result =
+          await updateUserDetailsUseCase(event.userId, event.key, event.value);
+      emit(result.fold(
+        (failure) => UserDetailsError(failure.message),
+        (_) {
+          // Simply refetch details without navigation
+          final currentUserId = getIt<LoginBloc>().state.authUser?.userId ?? '';
+          add(FetchUserDetails(currentUserId));
+          return const UserDetailsLoading(); // Keep user on ProfilePage
+        },
+      ));
+    });
   }
 }

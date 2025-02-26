@@ -1,45 +1,29 @@
-part of 'user_details_bloc.dart';
+// lib/features/user_details/presentation/view_model/bloc/user_details_event.dart
+import 'package:equatable/equatable.dart';
 
-sealed class UserDetailsEvent extends Equatable {
+abstract class UserDetailsEvent extends Equatable {
   const UserDetailsEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
-class UserDetails extends UserDetailsEvent {
-  final BuildContext context;
-  final String? profession;
-  final String? education;
-  final double? height;
-  final String? exercise;
-  final String? drinks;
-  final String? smoke;
-  final String? kids;
-  final String? religion;
+class FetchUserDetails extends UserDetailsEvent {
+  final String userId;
 
-  const UserDetails({
-    required this.context,
-    this.profession,
-    this.education,
-    this.height,
-    this.exercise,
-    this.drinks,
-    this.smoke,
-    this.kids,
-    this.religion,
-  });
+  const FetchUserDetails(this.userId);
 
   @override
-  List<Object> get props => [
-        context,
-        profession ?? '',
-        education ?? '',
-        height ?? 0.0,
-        exercise ?? '',
-        drinks ?? '',
-        smoke ?? '',
-        kids ?? '',
-        religion ?? '',
-      ];
+  List<Object?> get props => [userId];
+}
+
+class UpdateUserDetails extends UserDetailsEvent {
+  final String key;
+  final String value;
+  final String userId;
+
+  const UpdateUserDetails(this.userId, this.key, this.value);
+
+  @override
+  List<Object?> get props => [key, value];
 }
