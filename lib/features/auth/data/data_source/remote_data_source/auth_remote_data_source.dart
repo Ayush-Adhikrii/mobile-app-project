@@ -1,119 +1,88 @@
+// lib/features/auth/data/data_source/remote_data_source/auth_remote_data_source.dart
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:softwarica_student_management_bloc/app/constants/api_endpoints.dart';
+import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
 
-import '../../../../../app/constants/api_endpoints.dart';
-import '../../../domain/entity/auth_entity.dart';
-import '../auth_data_source.dart';
+import '../../../domain/use_case/update_profile_photo_use_case.dart';
+import '../../../domain/use_case/update_profile_usecase.dart';
 
-class AuthRemoteDataSource implements IAuthDataSource {
+abstract class AuthRemoteDataSource {
+  Future<void> registerUser(AuthEntity user);
+  Future<String> loginUser(String userName, String password);
+  Future<String> uploadProfilePicture(File file);
+  Future<AuthEntity> getCurrentUser();
+  Future<AuthEntity> updateProfile(UpdateProfileParams params);
+  Future<AuthEntity> uploadProfilePhoto(UploadProfilePhotoParams params);
+}
+
+class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final Dio _dio;
 
-  AuthRemoteDataSource(this._dio);
+  AuthRemoteDataSourceImpl(this._dio);
 
   @override
-  Future<AuthEntity> getCurrentUser() {
-    return Future.value(AuthEntity(
-      userId: "",
-      name: "",
-      email: null,
-      phoneNumber: "",
-      userName: "",
-      password: "",
-      gender: null,
-      // birthDate: null,
-      starSign: null,
-      bio: null,
-      profilePhoto: "",
-    ));
+  Future<void> registerUser(AuthEntity user) async {
+    await _dio.post(
+      '${ApiEndpoints.baseUrl}auth/signup',
+      data: user.toJson(),
+    );
   }
 
   @override
   Future<String> loginUser(String userName, String password) async {
-    try {
-      Response response = await _dio.post(
-        ApiEndpoints.login,
-        data: {
-          "userName": userName,
-          "password": password,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final str = response.data['token'];
-        return str;
-      } else {
-        throw Exception(response.statusMessage);
-      }
-    } on DioException catch (e) {
-      throw Exception(e);
-    } catch (e) {
-      throw Exception(e);
-    }
-  }
-
-  @override
-  Future<void> registerUser(AuthEntity user) async {
-    try {
-      print("User: ${user.profilePhoto}");
-      Response response = await _dio.post(
-        ApiEndpoints.register,
-        data: {
-          "name": user.name,
-          "gender": user.gender,
-          "email": user.email,
-          "birthDate": user.birthDate,
-          "starSign": user.starSign,
-          "bio": user.bio,
-          "phoneNumber": user.phoneNumber,
-          "userName": user.userName,
-          "password": user.password,
-          "profilePhoto": user.profilePhoto,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return;
-      } else {
-        throw Exception(response.statusMessage);
-      }
-    } on DioException catch (e) {
-      throw Exception(e);
-    } catch (e) {
-      throw Exception(e);
-    }
+    final response = await _dio.post(
+      '${ApiEndpoints.baseUrl}auth/login',
+      data: {'userName': userName, 'password': password},
+    );
+    return response.data['token']
+        as String; // Adjust based on your backend response
   }
 
   @override
   Future<String> uploadProfilePicture(File file) async {
-    try {
-      String fileName = file.path.split('/').last;
-      FormData formData = FormData.fromMap(
-        {
-          'profilePicture': await MultipartFile.fromFile(
-            file.path,
-            filename: fileName,
-          ),
-        },
-      );
+    final formData = FormData.fromMap({
+      'profilePicture': await MultipartFile.fromFile(file.path,
+          filename: file.path.split('/').last),
+    });
+    final response = await _dio.post(
+      '${ApiEndpoints.baseUrl}auth/uploadImage',
+      data: formData,
+      options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+    );
+    return response.data['data']
+        as String; // Adjust based on your backend response
+  }
 
-      Response response = await _dio.post(
-        ApiEndpoints.uploadImage,
-        data: formData,
-      );
+  @override
+  Future<AuthEntity> getCurrentUser() async {
+    final response = await _dio.get('${ApiEndpoints.baseUrl}auth/me');
+    return AuthEntity.fromJson(response.data['user']);
+  }
 
-      if (response.statusCode == 200) {
-        // Extract the image name from the response
-        final str = response.data['filename'];
-        print("Image name: $str");
-        return str;
-      } else {
-        throw Exception(response.statusMessage);
-      }
-    } on DioException catch (e) {
-      throw Exception(e);
-    } catch (e) {
-      throw Exception(e);
-    }
+  @override
+  Future<AuthEntity> updateProfile(UpdateProfileParams params) async {
+    final response = await _dio.put(
+      '${ApiEndpoints.baseUrl}auth/update/${params.userId}',
+      data: params.toJson(),
+    );
+    return AuthEntity.fromJson(response.data['user']);
+  }
+
+  @override
+  Future<AuthEntity> uploadProfilePhoto(UploadProfilePhotoParams params) async {
+    final formData = FormData.fromMap({
+      'profilePicture': await MultipartFile.fromFile(
+        params.image.path,
+        filename: params.image.path.split('/').last,
+      ),
+    });
+    final response = await _dio.post(
+      '${ApiEndpoints.baseUrl}auth/uploadImage',
+      data: formData,
+      options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+    );
+    return AuthEntity.fromJson(response.data['user']);
   }
 }

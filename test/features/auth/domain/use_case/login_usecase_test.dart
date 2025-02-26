@@ -45,7 +45,7 @@ void main() {
         .thenAnswer((_) async => const Right('mocked_token'));
 
     final result = await usecase(const LoginParams(
-      username: 'ayush@gmail.com',
+      userName: 'ayush@gmail.com',
       password: '1234',
     ));
 
@@ -79,7 +79,7 @@ void main() {
         .thenAnswer((_) async => const Right('mocked_token'));
 
     final result = await usecase(const LoginParams(
-      username: 'ayush@gmail.com',
+      userName: 'ayush@gmail.com',
       password: '12345',
     ));
 
@@ -116,7 +116,7 @@ void main() {
         .thenAnswer((_) async => const Right('mocked_token'));
 
     final result = await usecase(const LoginParams(
-      username: 'ayush@gmail.com',
+      userName: 'ayush@gmail.com',
       password: '12345', // Wrong password to trigger failure
     ));
 
@@ -154,7 +154,7 @@ void main() {
         .thenAnswer((_) async => const Right('mocked_token'));
 
     final result = await usecase(const LoginParams(
-      username: 'ayush@gmail.com',
+      userName: 'ayush@gmail.com',
       password: '1234', // right password so will triggure right
     ));
 
