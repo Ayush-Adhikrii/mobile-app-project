@@ -7,8 +7,10 @@ class ApiEndpoints {
 
   static const String ipAddress = "192.168.1.69";
   static String get baseUrl => "http://$ipAddress:5000/api/"; // Backend API
-  static String get profilePhotoUrl => "http://$ipAddress:5173/profilePhotos/"; // Frontend server
-  static String get userImageUrl => "http://$ipAddress:5173/userImages/"; // Frontend server
+  static String get profilePhotoUrl =>
+      "http://$ipAddress:5173/profilePhotos/"; // Frontend server
+  static String get userImageUrl =>
+      "http://$ipAddress:5173/userImages/"; // Frontend server
   // ====================== Auth Routes ======================
   static const String login = "auth/login";
   static const String currentUser = "auth/me";
