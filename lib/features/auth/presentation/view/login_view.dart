@@ -1,12 +1,10 @@
+// lib/features/auth/presentation/view/login_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:softwarica_student_management_bloc/app/constants/theme_constant.dart';
-import 'package:softwarica_student_management_bloc/app/di/di.dart';
 import 'package:softwarica_student_management_bloc/features/auth/presentation/view/register_with_email_view.dart';
 import 'package:softwarica_student_management_bloc/features/auth/presentation/view/register_with_number.dart';
 import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/login/login_bloc.dart';
-import 'package:softwarica_student_management_bloc/features/splash/presentation/view/splash_view.dart';
-import 'package:softwarica_student_management_bloc/features/splash/presentation/view_model/splash_cubit.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -17,8 +15,10 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _usernameController =
+      TextEditingController(text: "ab");
+  final TextEditingController _passwordController =
+      TextEditingController(text: "123456");
 
   String? _validateUsername(String? value) {
     if (value == null || value.isEmpty) {
@@ -38,7 +38,15 @@ class _LoginViewState extends State<LoginView> {
   }
 
   @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print('LoginView build called');
     return Scaffold(
       backgroundColor: const Color(0xFFFDF5F7),
       body: Padding(
@@ -49,10 +57,10 @@ class _LoginViewState extends State<LoginView> {
             const Spacer(flex: 2),
             Image.asset(
               'assets/icons/pink_logo.jpg',
-              height: 150, // Reduced height of the logo
+              height: 150,
               fit: BoxFit.contain,
             ),
-            const SizedBox(height: 20), // Reduced space
+            const SizedBox(height: 20),
             const Text(
               "Sign in to continue",
               style: TextStyle(
@@ -91,7 +99,7 @@ class _LoginViewState extends State<LoginView> {
                     validator: _validateUsername,
                     style: const TextStyle(color: Colors.black),
                   ),
-                  const SizedBox(height: 8), // Reduced space
+                  const SizedBox(height: 8),
                   TextFormField(
                     controller: _passwordController,
                     obscureText: true,
@@ -110,48 +118,42 @@ class _LoginViewState extends State<LoginView> {
                     validator: _validatePassword,
                     style: const TextStyle(color: Colors.black),
                   ),
-                  const SizedBox(height: 10), // Reduced space
-                  GestureDetector(
-                      onTap: () {
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ThemeConstant.primaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          // Handle sign-in logic
+                          final bloc = context.read<LoginBloc>();
+                          if (!bloc.isClosed) {
+                            bloc.add(LoginUserEvent(
+                              context: context,
+                              userName: _usernameController.text,
+                              password: _passwordController.text,
+                            ));
+                          } else {
+                            debugPrint('LoginBloc is closed, cannot login');
+                          }
                         }
                       },
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ThemeConstant
-                                .primaryColor, // Set the button color
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12), // Set padding
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  30), // Set border radius
-                            ),
-                          ),
-                          child: const Text(
-                            'Sign In',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              context.read<LoginBloc>().add(
-                                    LoginUserEvent(
-                                      context: context,
-                                      userName: _usernameController.text,
-                                      password: _passwordController.text,
-                                    ),
-                                  );
-                            }
-                          },
+                      child: const Text(
+                        'Sign In',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
-                      )),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -194,8 +196,7 @@ class _LoginViewState extends State<LoginView> {
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10), // Reduced padding
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         border: Border.all(color: Colors.grey.shade300),
@@ -226,8 +227,7 @@ class _LoginViewState extends State<LoginView> {
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10), // Reduced padding
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         border: Border.all(color: Colors.grey.shade300),
@@ -252,13 +252,18 @@ class _LoginViewState extends State<LoginView> {
             const SizedBox(height: 30),
             TextButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => BlocProvider(
-                      create: (_) => getIt<SplashCubit>(),
-                      child: SplashView(),
-                    ),
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Trouble Signing In?'),
+                    content: const Text(
+                        'Please contact support or try resetting your password.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK'),
+                      ),
+                    ],
                   ),
                 );
               },
