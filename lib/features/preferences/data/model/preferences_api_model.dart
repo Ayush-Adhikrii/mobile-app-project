@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../domain/entity/preferences_entity.dart';
+import '../../domain/entity/preference_entity.dart';
 
 part 'preferences_api_model.g.dart';
 
@@ -34,8 +34,8 @@ class PreferencesApiModel extends Equatable {
   Map<String, dynamic> toJson() => _$PreferencesApiModelToJson(this);
 
   /// Converts `PreferenceApiModel` to `PreferenceEntity`
-  PreferencesEntity toEntity() {
-    return PreferencesEntity(
+  PreferenceEntity toEntity() {
+    return PreferenceEntity(
       userId: userId ?? '',
       preferredGender: preferredGender,
       minAge: minAge,
@@ -47,7 +47,7 @@ class PreferencesApiModel extends Equatable {
   }
 
   /// Creates `PreferenceApiModel` from `PreferenceEntity`
-  factory PreferencesApiModel.fromEntity(PreferencesEntity entity) {
+  factory PreferencesApiModel.fromEntity(PreferenceEntity entity) {
     return PreferencesApiModel(
       userId: entity.userId,
       preferredGender: entity.preferredGender,

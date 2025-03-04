@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:hive_flutter/adapters.dart';
 
 import '../../../../app/constants/hive_table_constant.dart';
-import '../../domain/entity/preferences_entity.dart';
+import '../../domain/entity/preference_entity.dart';
 
 part 'preferences_hive_model.g.dart';
 
@@ -40,7 +40,7 @@ class PreferencesHiveModel extends Equatable {
   });
 
   // From Entity
-  factory PreferencesHiveModel.fromEntity(PreferencesEntity entity) {
+  factory PreferencesHiveModel.fromEntity(PreferenceEntity entity) {
     return PreferencesHiveModel(
       userId: entity.userId,
       preferredGender: entity.preferredGender,
@@ -53,8 +53,8 @@ class PreferencesHiveModel extends Equatable {
   }
 
   // To Entity
-  PreferencesEntity toEntity() {
-    return PreferencesEntity(
+  PreferenceEntity toEntity() {
+    return PreferenceEntity(
       userId: userId,
       preferredGender: preferredGender,
       minAge: minAge,
