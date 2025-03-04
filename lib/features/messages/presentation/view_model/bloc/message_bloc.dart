@@ -78,17 +78,15 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
             emit(MessageError(failure.message));
           },
           (message) {
-            if (message != null) {
-              print('Message sent successfully: ${message.content}');
-              // Always add message locally, regardless of socket
-              final updatedMessages = [...currentState.messages, message];
-              emit(MessageLoaded(
-                matches: currentState.matches,
-                messages: updatedMessages,
-                selectedMatchId: currentState.selectedMatchId,
-              ));
-            }
-          },
+            print('Message sent successfully: ${message.content}');
+            // Always add message locally, regardless of socket
+            final updatedMessages = [...currentState.messages, message];
+            emit(MessageLoaded(
+              matches: currentState.matches,
+              messages: updatedMessages,
+              selectedMatchId: currentState.selectedMatchId,
+            ));
+                    },
         );
       }
     });
