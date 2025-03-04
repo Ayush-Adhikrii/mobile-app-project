@@ -703,7 +703,7 @@ class _LikerAreaState extends State<LikerArea> {
                                         .toList();
                                     print('Filtered details for UI: $details');
                                   }
-a
+
                                   List<Widget> combinedWidgets = [];
                                   int maxLength = photos.length > details.length
                                       ? photos.length
