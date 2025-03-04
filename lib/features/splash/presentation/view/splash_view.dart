@@ -1,7 +1,6 @@
+// lib/features/splash/presentation/view/splash_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:softwarica_student_management_bloc/app/di/di.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view/login_view.dart';
 import 'package:softwarica_student_management_bloc/features/splash/presentation/view_model/splash_cubit.dart';
 
 class SplashView extends StatefulWidget {
@@ -12,16 +11,8 @@ class SplashView extends StatefulWidget {
 }
 
 class _SplashViewState extends State<SplashView> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<SplashCubit>().init(context);
-  }
-
-  // Current card index
   int currentIndex = 0;
 
-  // List of cards data
   final List<Map<String, String>> onboardingData = [
     {
       "title": "Find your partner with us",
@@ -39,7 +30,14 @@ class _SplashViewState extends State<SplashView> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    print('SplashView initState');
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print('SplashView build called');
     return Scaffold(
       backgroundColor: const Color(0xFFFDF5F7),
       body: Stack(
@@ -53,14 +51,15 @@ class _SplashViewState extends State<SplashView> {
               child: Image.asset(
                 "assets/icons/pink_logo.jpg",
                 fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  print('Image load error: $error');
+                  return const Text('Logo failed to load');
+                },
               ),
             ),
           ),
-
-          // Content section
           Column(
-            mainAxisAlignment:
-                MainAxisAlignment.end, // Align the content at the bottom
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Container(
                 width: double.infinity,
@@ -81,34 +80,27 @@ class _SplashViewState extends State<SplashView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Dynamic Title with Proxima Nova font
                     Text(
                       onboardingData[currentIndex]["title"]!,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        fontFamily: 'ProximaNova', // Set font here
+                        fontFamily: 'ProximaNova',
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
-                    // Dynamic Subtitle with Proxima Nova font
                     Text(
                       onboardingData[currentIndex]["subtitle"]!,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        fontFamily: 'ProximaNova', // Set font here
+                        fontFamily: 'ProximaNova',
                         fontSize: 14,
                         color: Colors.grey,
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
-                    // Progress indicator
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
@@ -126,10 +118,7 @@ class _SplashViewState extends State<SplashView> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
-                    // Gradient button
                     GestureDetector(
                       onTap: () {
                         debugPrint("Navigation tapped");
@@ -138,16 +127,8 @@ class _SplashViewState extends State<SplashView> {
                             currentIndex++;
                           });
                         } else {
-                          debugPrint("Navigating to GetStartedView");
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BlocProvider.value(
-                                value: getIt<SplashCubit>(),
-                                child: LoginView(),
-                              ),
-                            ),
-                          );
+                          debugPrint("Navigating to next screen");
+                          context.read<SplashCubit>().navigate(context);
                         }
                       },
                       child: Container(
@@ -156,8 +137,8 @@ class _SplashViewState extends State<SplashView> {
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [
-                              Color(0xFFFF84A7), // Starting color
-                              Color(0xFFE03368), // Ending color
+                              Color(0xFFFF84A7),
+                              Color(0xFFE03368),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -170,7 +151,7 @@ class _SplashViewState extends State<SplashView> {
                               : "Get Started",
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                            fontFamily: 'ProximaNova', // Set font here
+                            fontFamily: 'ProximaNova',
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
