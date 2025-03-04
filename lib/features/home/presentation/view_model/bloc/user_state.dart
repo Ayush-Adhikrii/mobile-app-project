@@ -1,15 +1,8 @@
 // lib/features/home/presentation/view_model/bloc/user_state.dart
-import 'package:equatable/equatable.dart';
 import 'package:softwarica_student_management_bloc/features/home/domain/entity/user_entity.dart';
 
-abstract class UserState extends Equatable {
-  final List<UserEntity> users;
-  final String? swipeFeedback;
-
-  const UserState({this.users = const [], this.swipeFeedback});
-
-  @override
-  List<Object?> get props => [users, swipeFeedback];
+abstract class UserState {
+  const UserState();
 }
 
 class UserInitial extends UserState {
@@ -17,21 +10,28 @@ class UserInitial extends UserState {
 }
 
 class UserLoading extends UserState {
-  const UserLoading({super.users});
+  final List<UserEntity>? users;
+
+  const UserLoading({this.users});
 }
 
 class UserLoaded extends UserState {
-  const UserLoaded(List<UserEntity> users, {String? swipeFeedback}) : super(users: users, swipeFeedback: swipeFeedback);
+  final List<UserEntity> users;
+  final String? swipeFeedback;
 
-  @override
-  List<Object?> get props => [users, swipeFeedback];
+  const UserLoaded(this.users, {this.swipeFeedback});
+}
+
+class LikersLoaded extends UserState {
+  final List<UserEntity> likers;
+  final String? swipeFeedback;
+
+  const LikersLoaded(this.likers, {this.swipeFeedback});
 }
 
 class UserError extends UserState {
   final String message;
+  final List<UserEntity>? users;
 
-  const UserError(this.message, {super.users});
-
-  @override
-  List<Object?> get props => [message, users];
+  const UserError(this.message, {this.users});
 }

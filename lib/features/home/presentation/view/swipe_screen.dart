@@ -107,7 +107,6 @@ class _SwipeCardsState extends State<SwipeCards> {
     final double availableHeight = MediaQuery.of(context).size.height - topGap;
     final double photoHeight = availableHeight * 0.8;
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double extraPhotoHeight = screenWidth * 0.3;
 
     if (!_isReady || widget.users.isEmpty) {
       return const Center(child: CircularProgressIndicator());
@@ -299,7 +298,7 @@ class _SwipeCardsState extends State<SwipeCards> {
                                   for (int i = 0; i < maxLength; i++) {
                                     if (i < photos.length) {
                                       combinedWidgets.add(_buildPhotoWidget(
-                                          photos[i], screenWidth * 0.3));
+                                          photos[i], photoHeight));
                                     }
                                     if (i < details.length) {
                                       combinedWidgets.add(_buildDetailRow(

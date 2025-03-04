@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/login/login_bloc.dart';
 import 'package:softwarica_student_management_bloc/features/messages/presentation/view/match_page.dart';
 import 'package:softwarica_student_management_bloc/features/preferences/presentation/view/pages/preference_page.dart';
+import 'package:softwarica_student_management_bloc/features/subscription/presentation/view/likes_page.dart';
 
 import '../../../user_details/presentation/view/profile_view.dart';
 import '../view/swipe_screen.dart';
@@ -13,11 +14,11 @@ class HomeCubit extends Cubit<HomeState> {
   HomeCubit() : super(HomeState(selectedIndex: 2, views: _defaultViews));
 
   static final List<Widget> _defaultViews = [
-    const Center(child: Text('Likes')), // Placeholder for likes
-    const PreferencePage(), // Placeholder for filter
+    const LikesPage(), //  likes
+    const PreferencePage(), // filter
     const SwipeScreen(), // Matches
     const ProfilePage(), // Profile
-    const MatchesPage(), // Placeholder for messages
+    const MatchesPage(), //  messages
   ];
 
   void onTabTapped(int index) {

@@ -12,6 +12,12 @@ class FetchUsers extends UserEvent {
   const FetchUsers();
 }
 
+class FetchLikers extends UserEvent {
+  final String userId;
+
+  FetchLikers(this.userId);
+}
+
 class SwipeLeft extends UserEvent {
   final String userId;
 
