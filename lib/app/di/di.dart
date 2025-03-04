@@ -21,6 +21,7 @@ import 'package:softwarica_student_management_bloc/features/auth/presentation/vi
 import 'package:softwarica_student_management_bloc/features/home/data/data_source/remote_datasource/user_remote_datasource.dart';
 import 'package:softwarica_student_management_bloc/features/home/data/repository/remote_repository/user_remote_repository.dart';
 import 'package:softwarica_student_management_bloc/features/home/domain/repository/user_repository.dart';
+import 'package:softwarica_student_management_bloc/features/home/domain/use_case/get_likers_usecase.dart';
 import 'package:softwarica_student_management_bloc/features/home/domain/use_case/get_users_usecase.dart';
 import 'package:softwarica_student_management_bloc/features/home/presentation/view_model/bloc/user_bloc.dart';
 import 'package:softwarica_student_management_bloc/features/home/presentation/view_model/home_cubit.dart';
@@ -50,6 +51,13 @@ import '../../features/preferences/data/repositories/preference_remote_repositor
 import '../../features/preferences/domain/use_case/get_preference_use_case.dart';
 import '../../features/preferences/domain/use_case/update_preference_use_case.dart';
 import '../../features/preferences/presentation/view_model/bloc/preference_bloc.dart';
+import '../../features/subscription/data/datasources/payment_service.dart';
+import '../../features/subscription/data/datasources/subscription_remote_datasource.dart';
+import '../../features/subscription/data/repositories/subscription_remote_repository.dart';
+import '../../features/subscription/domain/repositories/subscription_repository.dart';
+import '../../features/subscription/domain/usecases/get_subscription_expiry.dart';
+import '../../features/subscription/domain/usecases/save_subscription.dart';
+import '../../features/subscription/presentation/view_model/bloc/subscription_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -69,6 +77,7 @@ Future<void> initDependencies() async {
   await _initUpdateDependencies();
   await _initPreferenceDependencies();
   await _initMessageDependencies();
+  await _initSubscriptionDependencies();
 }
 
 Future<void> _initApiService() async {
@@ -198,6 +207,9 @@ Future<void> _initUserProfileDependencies() async {
   getIt.registerLazySingleton<GetUsersUseCase>(
     () => GetUsersUseCase(getIt<IUserRepository>()),
   );
+  getIt.registerLazySingleton<GetLikersUseCase>(
+    () => GetLikersUseCase(getIt<IUserRepository>()),
+  );
   getIt.registerLazySingleton<SwipeLeftUseCase>(
     () => SwipeLeftUseCase(getIt<IUserRepository>()),
   );
@@ -209,6 +221,7 @@ Future<void> _initUserProfileDependencies() async {
       getIt<GetUsersUseCase>(),
       getIt<SwipeLeftUseCase>(),
       getIt<SwipeRightUseCase>(),
+      getIt<GetLikersUseCase>(),
     ),
   );
 }
@@ -285,9 +298,10 @@ Future<void> _initPreferenceDependencies() async {
 
 Future<void> _initMessageDependencies() async {
   print('Initializing message dependencies');
-  getIt.registerLazySingleton<MessageRemoteDataSource>(
-      () => MessageRemoteDataSourceImpl(getIt<Dio>(),
-      getIt<LoginBloc>().state.authUser?.userId ?? '67bca780905faf4859a1686f',
+  getIt.registerLazySingleton<MessageRemoteDataSource>(() =>
+      MessageRemoteDataSourceImpl(
+        getIt<Dio>(),
+        getIt<LoginBloc>().state.authUser?.userId ?? '67bca780905faf4859a1686f',
       ));
   getIt.registerLazySingleton<MessageRepositoryImpl>(
       () => MessageRepositoryImpl(getIt<MessageRemoteDataSource>()));
@@ -302,4 +316,24 @@ Future<void> _initMessageDependencies() async {
       getIt<MessageRepositoryImpl>(),
     ),
   );
+}
+
+Future<void> _initSubscriptionDependencies() async {
+  getIt.registerLazySingleton<SubscriptionRemoteDataSource>(
+    () => SubscriptionRemoteDataSourceImpl(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<SubscriptionRepository>(
+    () => SubscriptionRepositoryImpl(getIt<SubscriptionRemoteDataSource>()),
+  );
+  getIt.registerLazySingleton<GetSubscriptionExpiry>(
+    () => GetSubscriptionExpiry(getIt<SubscriptionRepository>()),
+  );
+  getIt.registerLazySingleton<SaveSubscription>(
+    () => SaveSubscription(getIt<SubscriptionRepository>()),
+  );
+  getIt.registerFactory<SubscriptionBloc>(
+    () => SubscriptionBloc(
+        getIt<GetSubscriptionExpiry>(), getIt<SaveSubscription>()),
+  );
+  getIt.registerSingleton<PaymentService>(PaymentService(getIt<Dio>()));
 }

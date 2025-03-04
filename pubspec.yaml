@@ -14,6 +14,9 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
 
+  esewa_flutter_sdk:
+    path: ./esewa_flutter_sdk
+
   dio: ^5.7.0
   hive_flutter: ^1.1.0
   pretty_dio_logger: ^1.4.0
@@ -41,6 +44,7 @@ dependencies:
   flutter_card_swiper: ^7.0.2
   socket_io_client: ^3.0.2
   emoji_picker_flutter: ^4.3.0
+  esewa_flutter: ^2.0.0
 
 dev_dependencies:
   flutter_test:

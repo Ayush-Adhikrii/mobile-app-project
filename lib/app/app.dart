@@ -51,7 +51,7 @@ class App extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Hooked',
-        theme: AppTheme.getApplicationTheme(isDarkMode: false),
+        theme: AppTheme.getApplicationTheme(isDarkMode: true),
         initialRoute: '/splash', // Start with SplashView
         routes: {
           '/splash': (context) => const SplashView(),
