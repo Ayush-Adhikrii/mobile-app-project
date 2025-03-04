@@ -185,7 +185,8 @@ class _EditFieldModalState extends State<EditFieldModal> {
           'Christian',
           'Buddhist',
           'Atheist',
-          'Omnist'
+          'Omnist',
+          'Other'
         ];
       default:
         return [];

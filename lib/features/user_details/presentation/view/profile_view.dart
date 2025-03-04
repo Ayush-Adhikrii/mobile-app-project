@@ -111,17 +111,8 @@ class __ProfileContentState extends State<_ProfileContent> {
       final File image = File(pickedFile.path);
       if (!context.read<PhotosBloc>().isClosed) {
         context.read<PhotosBloc>().add(UploadPhoto(userId, image));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Photo upload unavailable')),
-        );
       }
-    } else {
-      print('No image selected');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No image selected')),
-      );
-    }
+    } 
   }
 
   @override
@@ -179,17 +170,9 @@ class __ProfileContentState extends State<_ProfileContent> {
         children: [
           BlocConsumer<PhotosBloc, PhotosState>(
             listener: (context, state) {
-              if (state is PhotosError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error: ${state.message}')),
-                );
-              } else if (state is PhotosLoaded) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Photos updated')),
-                );
-                if (!context.read<PhotosBloc>().isClosed) {
-                  context.read<PhotosBloc>().add(FetchPhotos(authUser.userId!));
-                }
+             
+              if (!context.read<PhotosBloc>().isClosed) {
+                context.read<PhotosBloc>().add(FetchPhotos(authUser.userId!));
               }
             },
             builder: (context, photosState) {
@@ -337,15 +320,7 @@ class __ProfileContentState extends State<_ProfileContent> {
   Widget _buildAddPhotoButton(double screenWidth, String userId) {
     return BlocListener<PhotosBloc, PhotosState>(
       listener: (context, state) {
-        if (state is PhotosError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error uploading photo: ${state.message}')),
-          );
-        } else if (state is PhotosLoaded) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Photo uploaded successfully')),
-          );
-        }
+        
       },
       child: SizedBox(
         width: double.infinity,
