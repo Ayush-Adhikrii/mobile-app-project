@@ -9,9 +9,23 @@ class TokenSharedPrefs {
 
   Future<Either<Failure, void>> saveToken(String token) async {
     try {
+      print('Saving token: $token'); // Debug
       await _sharedPreferences.setString('token', token);
+      print('Token saved successfully'); // Debug
       return Right(null);
     } catch (e) {
+      print('Save token error: $e'); // Debug
+      return Left(SharedPrefsFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, void>> clearToken() async {
+    try {
+      await _sharedPreferences.setString('token', "");
+      print('Token saved successfully'); // Debug
+      return Right(null);
+    } catch (e) {
+      print('Save token error: $e'); // Debug
       return Left(SharedPrefsFailure(message: e.toString()));
     }
   }
@@ -19,8 +33,10 @@ class TokenSharedPrefs {
   Future<Either<Failure, String>> getToken() async {
     try {
       final token = _sharedPreferences.getString('token');
+      print('Retrieved token: $token'); // Debug
       return Right(token ?? '');
     } catch (e) {
+      print('Get token error: $e'); // Debug
       return Left(SharedPrefsFailure(message: e.toString()));
     }
   }

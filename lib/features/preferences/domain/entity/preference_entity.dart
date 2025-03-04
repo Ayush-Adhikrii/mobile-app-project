@@ -1,6 +1,7 @@
+// lib/features/preference/domain/entities/preference_entity.dart
 import 'package:equatable/equatable.dart';
 
-class PreferencesEntity extends Equatable {
+class PreferenceEntity extends Equatable {
   final String userId;
   final String? preferredGender;
   final int? minAge;
@@ -9,7 +10,7 @@ class PreferencesEntity extends Equatable {
   final String? preferredStarSign;
   final String? preferredReligion;
 
-  const PreferencesEntity({
+  const PreferenceEntity({
     required this.userId,
     this.preferredGender,
     this.minAge,

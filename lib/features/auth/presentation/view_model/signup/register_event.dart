@@ -22,10 +22,11 @@ class RegisterUser extends RegisterEvent {
   final String userName;
   final String password;
   final String? gender;
-  final DateTime? birthDate;
+  final String? birthDate;
   final String? starSign;
   final String? bio;
   final String? profilePhoto;
+  
   const RegisterUser({
     required this.context,
     required this.name,
@@ -49,7 +50,7 @@ class RegisterUser extends RegisterEvent {
         userName,
         password,
         gender ?? '',
-        birthDate ?? DateTime(0),
+        birthDate ?? '',
         starSign ?? '',
         bio ?? '',
         profilePhoto ?? '',

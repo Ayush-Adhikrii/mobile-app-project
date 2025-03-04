@@ -348,7 +348,7 @@ class _RegisterViewState extends State<RegisterView> {
                 controller: TextEditingController(text: widget.emailOrPhone),
                 enabled: false,
                 decoration: const InputDecoration(
-                  labelText: "Username",
+                  labelText: "userName",
                 ),
               ),
               const SizedBox(height: 16),

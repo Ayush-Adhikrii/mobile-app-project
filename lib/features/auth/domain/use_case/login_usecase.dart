@@ -7,21 +7,20 @@ import '../../../../core/error/failure.dart';
 import '../repository/auth_repository.dart';
 
 class LoginParams extends Equatable {
-  final String username;
+  final String userName;
   final String password;
 
   const LoginParams({
-    required this.username,
+    required this.userName,
     required this.password,
   });
 
-  // Initial Constructor
   const LoginParams.initial()
-      : username = '',
+      : userName = '',
         password = '';
 
   @override
-  List<Object> get props => [username, password];
+  List<Object> get props => [userName, password];
 }
 
 class LoginUseCase implements UsecaseWithParams<String, LoginParams> {
@@ -31,19 +30,19 @@ class LoginUseCase implements UsecaseWithParams<String, LoginParams> {
   LoginUseCase(this.repository, this.tokenSharedPrefs);
 
   @override
-  Future<Either<Failure, String>> call(LoginParams params) {
-    // Save token in Shared Preferences
-    return repository.loginUser(params.username, params.password).then((value) {
-      return value.fold(
-        (failure) => Left(failure),
-        (token) {
-          tokenSharedPrefs.saveToken(token);
-          tokenSharedPrefs.getToken().then((value) {
-            print(value);
-          });
-          return Right(token);
-        },
-      );
-    });
+  Future<Either<Failure, String>> call(LoginParams params) async {
+    final result = await repository.loginUser(params.userName, params.password);
+    return result.fold(
+      (failure) => Left(failure),
+      (token) async {
+        final saveResult = await tokenSharedPrefs.saveToken(token);
+        return saveResult.fold(
+          (failure) => Left(failure),
+          (_) async {
+           return Right(token);
+          },
+        );
+      },
+    );
   }
 }
