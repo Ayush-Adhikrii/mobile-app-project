@@ -5,6 +5,7 @@ import 'package:softwarica_student_management_bloc/features/home/domain/entity/u
 
 abstract class IUserRepository {
   Future<Either<Failure, List<UserEntity>>> getUsers();
+  Future<Either<Failure, List<UserEntity>>> getLikers(String userId);
   Future<Either<Failure, void>> swipeLeft(String userId);
   Future<Either<Failure, void>> swipeRight(String userId);
 }

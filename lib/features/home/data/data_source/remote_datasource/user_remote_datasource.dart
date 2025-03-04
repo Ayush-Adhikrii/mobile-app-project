@@ -5,6 +5,7 @@ import 'package:softwarica_student_management_bloc/features/home/domain/entity/u
 
 abstract class UserRemoteDataSource {
   Future<List<UserEntity>> getUsers();
+  Future<List<UserEntity>> getLikers(String userId);
   Future<void> swipeLeft(String userId);
   Future<void> swipeRight(String userId);
 }
@@ -45,6 +46,42 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           'Failed to fetch users: ${e.message ?? 'Unknown network error'}');
     } catch (e) {
       print('Unexpected error in getUsers: $e');
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  @override
+  Future<List<UserEntity>> getLikers(String userId) async {
+    try {
+      final response = await _dio.get(
+        '${ApiEndpoints.baseUrl}matches/likers/$userId',
+        options: Options(
+          receiveTimeout: const Duration(seconds: 10),
+          sendTimeout: const Duration(seconds: 10),
+        ),
+      );
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data is List) {
+          return data.map((json) => UserEntity.fromJson(json)).toList();
+        } else {
+          throw Exception('Unexpected response format: $data');
+        }
+      } else if (response.statusCode == 404) {
+        return []; // Return empty list for 404
+      } else {
+        throw Exception('Failed to fetch likers: ${response.statusMessage}');
+      }
+    } on DioException catch (e) {
+      print(
+          'DioException in getLikers: ${e.type}, Message: ${e.message}, Response: ${e.response?.data}, Error: ${e.error}');
+      if (e.response?.statusCode == 404) {
+        return []; // Handle 404 by returning empty list
+      }
+      throw Exception(
+          'Failed to fetch likers: ${e.message ?? 'Unknown network error'}');
+    } catch (e) {
+      print('Unexpected error in getLikers: $e');
       throw Exception('Unexpected error: $e');
     }
   }
