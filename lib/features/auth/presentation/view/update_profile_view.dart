@@ -1,17 +1,21 @@
-// lib/features/auth/presentation/view/update_profile_view.dart
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:softwarica_student_management_bloc/app/constants/api_endpoints.dart';
 import 'package:softwarica_student_management_bloc/app/constants/theme_constant.dart';
 import 'package:softwarica_student_management_bloc/app/di/di.dart';
-import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/edit_profile/edit_profile_bloc.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/edit_profile/edit_profile_event.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/edit_profile/edit_profile_state.dart';
+import 'package:softwarica_student_management_bloc/core/theme/app_theme.dart';
+import 'package:softwarica_student_management_bloc/features/home/presentation/view_model/home_cubit.dart';
+
+import '../../domain/entity/auth_entity.dart';
+import '../view_model/edit_profile/edit_profile_bloc.dart';
+import '../view_model/edit_profile/edit_profile_event.dart';
+import '../view_model/edit_profile/edit_profile_state.dart';
 
 class UpdateProfileView extends StatefulWidget {
   final AuthEntity authUser;
@@ -33,6 +37,10 @@ class _UpdateProfileViewState extends State<UpdateProfileView> {
   String? _gender;
   DateTime? _birthDate;
   File? _profilePhoto;
+  StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
+  DateTime? _lastShakeTime;
+  static const double logoutShakeThreshold = 50.0; // High threshold for logout
+  static const int shakeCooldown = 1000;
 
   @override
   void initState() {
@@ -49,6 +57,28 @@ class _UpdateProfileViewState extends State<UpdateProfileView> {
         _birthDate != null ? DateFormat('yyyy/MM/dd').format(_birthDate!) : '';
     _starSignController.text = widget.authUser.starSign ?? '';
     _gender = widget.authUser.gender ?? 'Male';
+    _initLogoutDetection();
+  }
+
+  void _initLogoutDetection() {
+    _accelerometerSubscription = accelerometerEvents.listen((event) {
+      final now = DateTime.now();
+      if (_lastShakeTime != null &&
+          now.difference(_lastShakeTime!).inMilliseconds < shakeCooldown) {
+        return;
+      }
+
+      if (event.x.abs() > logoutShakeThreshold ||
+          event.y.abs() > logoutShakeThreshold ||
+          event.z.abs() > logoutShakeThreshold) {
+        _lastShakeTime = now;
+        _logout(context);
+      }
+    });
+  }
+
+  void _logout(BuildContext context) {
+    context.read<HomeCubit>().logout(context);
   }
 
   Future<void> _pickProfilePhoto() async {
@@ -82,10 +112,27 @@ class _UpdateProfileViewState extends State<UpdateProfileView> {
   }
 
   @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneNumberController.dispose();
+    _bioController.dispose();
+    _userNameController.dispose();
+    _birthDateController.dispose();
+    _starSignController.dispose();
+    _accelerometerSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final maxDate = DateTime(now.year - 16, now.month, now.day);
-    final minDate = DateTime(1980); // Consistent with RegisterView
+    final minDate = DateTime(1980);
+    final theme = Theme.of(context);
+    final customTheme = theme.customThemeExtension;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
 
     return BlocProvider.value(
       value: getIt<EditProfileBloc>(),
@@ -107,189 +154,184 @@ class _UpdateProfileViewState extends State<UpdateProfileView> {
         },
         child: Scaffold(
           appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: const Text('Edit Profile'),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-          ),
-          body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFFCE4EC), Color(0xFFE1BEE7)],
+            elevation: 1,
+            shadowColor: theme.colorScheme.onSurface.withOpacity(0.1),
+            toolbarHeight: isTablet ? 40 : 30,
+            leading: Padding(
+              padding: const EdgeInsets.only(left: ThemeConstant.smallPadding),
+              child: Image.asset(
+                'assets/icons/plain_logo.png',
+                height: isTablet ? 30 : 20,
+                width: isTablet ? 30 : 20,
+                fit: BoxFit.contain,
               ),
             ),
-            padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  InkWell(
-                    onTap: _pickProfilePhoto,
-                    child: CircleAvatar(
-                      radius: 80, // Larger avatar
-                      backgroundImage: _profilePhoto != null
-                          ? FileImage(_profilePhoto!)
-                          : widget.authUser.profilePhoto != null
-                              ? NetworkImage(
-                                  '${ApiEndpoints.profilePhotoUrl}${widget.authUser.profilePhoto}')
-                              : const AssetImage('assets/default_profile.png')
-                                  as ImageProvider,
+            leadingWidth: isTablet ? 40 : 30,
+            title: Center(
+              child: Image.asset(
+                'assets/icons/text_logo.png',
+                height: isTablet ? 30 : 20,
+                fit: BoxFit.contain,
+              ),
+            ),
+            backgroundColor: theme.colorScheme.surface,
+            actions: [
+              IconButton(
+                icon:
+                    Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: customTheme.scaffoldGradient,
+            ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(isTablet
+                    ? ThemeConstant.largePadding
+                    : ThemeConstant.mediumPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    InkWell(
+                      onTap: _pickProfilePhoto,
+                      child: CircleAvatar(
+                        radius: isTablet ? 100 : 80,
+                        backgroundImage: _profilePhoto != null
+                            ? FileImage(_profilePhoto!)
+                            : widget.authUser.profilePhoto != null
+                                ? NetworkImage(
+                                    '${ApiEndpoints.profilePhotoUrl}${widget.authUser.profilePhoto}')
+                                : const AssetImage('assets/default_profile.png')
+                                    as ImageProvider,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                        labelText: 'Full Name', border: OutlineInputBorder()),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: ['Male', 'Female', 'Other'].map((g) {
-                      return Row(
-                        children: [
-                          Radio<String>(
-                            value: g,
-                            groupValue: _gender,
-                            onChanged: (value) =>
-                                setState(() => _gender = value!),
-                            activeColor: ThemeConstant.primaryColor,
-                          ),
-                          Text(g),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                        labelText: 'Email', border: OutlineInputBorder()),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _birthDateController,
-                    decoration: const InputDecoration(
-                        labelText: 'Birth Date', border: OutlineInputBorder()),
-                    readOnly: true,
-                    onTap: () async {
-                      final pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: maxDate,
-                        firstDate: minDate,
-                        lastDate: maxDate,
-                      );
-                      if (pickedDate != null) {
-                        setState(() {
-                          _birthDate = pickedDate;
-                          _birthDateController.text =
-                              DateFormat('yyyy/MM/dd').format(pickedDate);
-                          _starSignController.text = _getStarSign(pickedDate);
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _starSignController,
-                    decoration: const InputDecoration(
-                        labelText: 'Star Sign', border: OutlineInputBorder()),
-                    readOnly: true,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _phoneNumberController,
-                    decoration: const InputDecoration(
-                        labelText: 'Phone Number',
-                        border: OutlineInputBorder()),
-                    keyboardType: TextInputType.phone,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _bioController,
-                    decoration: const InputDecoration(
-                        labelText: 'Bio', border: OutlineInputBorder()),
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _userNameController,
-                    decoration: const InputDecoration(
-                        labelText: 'Username', border: OutlineInputBorder()),
-                    readOnly: true,
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_nameController.text.isNotEmpty &&
-                            _emailController.text.isNotEmpty &&
-                            _userNameController.text.isNotEmpty) {
-                          context.read<EditProfileBloc>().add(UpdateProfile(
-                                userId: widget.authUser.userId!,
-                                name: _nameController.text,
-                                gender: _gender!,
-                                email: _emailController.text,
-                                birthDate: _birthDate!,
-                                phoneNumber: _phoneNumberController.text,
-                                bio: _bioController.text,
-                                userName: _userNameController.text,
-                              ));
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'Please fill required fields (Name, Email, Username)')),
-                          );
+                    SizedBox(height: ThemeConstant.mediumPadding),
+                    TextField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(labelText: 'Full Name'),
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                    SizedBox(height: ThemeConstant.mediumPadding),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: ['Male', 'Female', 'Other'].map((g) {
+                        return Row(
+                          children: [
+                            Radio<String>(
+                              value: g,
+                              groupValue: _gender,
+                              onChanged: (value) =>
+                                  setState(() => _gender = value!),
+                              activeColor: theme.colorScheme.primary,
+                            ),
+                            Text(g, style: theme.textTheme.bodyLarge),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                    SizedBox(height: ThemeConstant.mediumPadding),
+                    TextField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(labelText: 'Email'),
+                      keyboardType: TextInputType.emailAddress,
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                    SizedBox(height: ThemeConstant.mediumPadding),
+                    TextField(
+                      controller: _birthDateController,
+                      decoration:
+                          const InputDecoration(labelText: 'Birth Date'),
+                      readOnly: true,
+                      onTap: () async {
+                        final pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: maxDate,
+                          firstDate: minDate,
+                          lastDate: maxDate,
+                        );
+                        if (pickedDate != null) {
+                          setState(() {
+                            _birthDate = pickedDate;
+                            _birthDateController.text =
+                                DateFormat('yyyy/MM/dd').format(pickedDate);
+                            _starSignController.text = _getStarSign(pickedDate);
+                          });
                         }
                       },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 16, horizontal: 24),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
-                        elevation: 5,
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: Colors.white,
-                      ).copyWith(
-                        overlayColor:
-                            WidgetStateProperty.all(Colors.transparent),
-                        shadowColor: WidgetStateProperty.all(
-                            Colors.black.withOpacity(0.3)),
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                    SizedBox(height: ThemeConstant.mediumPadding),
+                    TextField(
+                      controller: _starSignController,
+                      decoration: const InputDecoration(labelText: 'Star Sign'),
+                      readOnly: true,
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                    SizedBox(height: ThemeConstant.mediumPadding),
+                    TextField(
+                      controller: _phoneNumberController,
+                      decoration:
+                          const InputDecoration(labelText: 'Phone Number'),
+                      keyboardType: TextInputType.phone,
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                    SizedBox(height: ThemeConstant.mediumPadding),
+                    TextField(
+                      controller: _bioController,
+                      decoration: const InputDecoration(labelText: 'Bio'),
+                      maxLines: 3,
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                    SizedBox(height: ThemeConstant.mediumPadding),
+                    TextField(
+                      controller: _userNameController,
+                      decoration: const InputDecoration(labelText: 'Username'),
+                      readOnly: true,
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                    SizedBox(height: ThemeConstant.mediumPadding),
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: customTheme.buttonGradient,
+                        borderRadius: BorderRadius.circular(
+                            ThemeConstant.largeBorderRadius),
                       ),
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              ThemeConstant.primaryColor,
-                              ThemeConstant.primaryColor.withOpacity(0.8)
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Container(
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: const Text(
-                            'Update Profile',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (_nameController.text.isNotEmpty &&
+                              _emailController.text.isNotEmpty &&
+                              _userNameController.text.isNotEmpty) {
+                            context.read<EditProfileBloc>().add(UpdateProfile(
+                                  userId: widget.authUser.userId!,
+                                  name: _nameController.text,
+                                  gender: _gender!,
+                                  email: _emailController.text,
+                                  birthDate: _birthDate!,
+                                  phoneNumber: _phoneNumberController.text,
+                                  bio: _bioController.text,
+                                  userName: _userNameController.text,
+                                ));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Please fill required fields (Name, Email, Username)')),
+                            );
+                          }
+                        },
+                        child: Text(
+                          'Update Profile',
+                          style: theme.textTheme.labelLarge,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                    SizedBox(height: ThemeConstant.mediumPadding),
+                  ],
+                ),
               ),
             ),
           ),

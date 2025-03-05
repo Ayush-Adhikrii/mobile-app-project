@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:softwarica_student_management_bloc/app/shared_prefs/token_shared_prefs.dart';
 import 'package:softwarica_student_management_bloc/core/network/api_service.dart';
 import 'package:softwarica_student_management_bloc/core/network/hive_service.dart';
+import 'package:softwarica_student_management_bloc/core/services/socket_service.dart';
 import 'package:softwarica_student_management_bloc/features/auth/data/data_source/local_data_source/auth_local_datasource.dart';
 import 'package:softwarica_student_management_bloc/features/auth/data/data_source/remote_data_source/auth_remote_data_source.dart';
 import 'package:softwarica_student_management_bloc/features/auth/data/repository/auth_local_repository/auth_local_repository.dart';
@@ -33,6 +34,7 @@ import 'package:softwarica_student_management_bloc/features/user_details/domain/
 import 'package:softwarica_student_management_bloc/features/user_details/domain/use_case/update_user_details_use_case.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/presentation/view_model/bloc/user_details_bloc.dart';
 
+import '../../core/theme/theme_cubit.dart';
 import '../../features/auth/domain/use_case/update_profile_photo_use_case.dart';
 import '../../features/home/domain/use_case/sewipe_left_usesace.dart';
 import '../../features/home/domain/use_case/swipe_right_usecase.dart';
@@ -65,9 +67,10 @@ Future<void> initDependencies() async {
   await _initHiveService();
   await _initApiService();
   await _initSharedPreferences();
+  await _initThemeDependencies();
 
   // Core dependencies first
-  await _initAuthDependencies(); // Combined auth-related dependencies
+  await _initAuthDependencies(); 
   await _initLoginDependencies();
   await _initSplashScreenDependencies();
   await _initHomeDependencies();
@@ -197,7 +200,8 @@ Future<void> _initUserDetailsDependencies() async {
 
 // lib/app/di/di.dart (excerpt)
 Future<void> _initUserProfileDependencies() async {
-  print('Initializing user profile dependencies');
+  getIt.registerLazySingleton(() => SocketService());
+
   getIt.registerLazySingleton<UserRemoteDataSource>(
     () => UserRemoteDataSourceImpl(getIt<Dio>()),
   );
@@ -218,10 +222,11 @@ Future<void> _initUserProfileDependencies() async {
   );
   getIt.registerFactory<UserBloc>(
     () => UserBloc(
-      getIt<GetUsersUseCase>(),
-      getIt<SwipeLeftUseCase>(),
-      getIt<SwipeRightUseCase>(),
-      getIt<GetLikersUseCase>(),
+      fetchUsersUseCase:      getIt<GetUsersUseCase>(),
+      fetchLikersUseCase: getIt<GetLikersUseCase>(),
+      swipeLeftUseCase: getIt<SwipeLeftUseCase>(),
+      swipeRightUseCase:  getIt<SwipeRightUseCase>(),
+      socketService:  getIt<SocketService>(),  
     ),
   );
 }
@@ -336,4 +341,11 @@ Future<void> _initSubscriptionDependencies() async {
         getIt<GetSubscriptionExpiry>(), getIt<SaveSubscription>()),
   );
   getIt.registerSingleton<PaymentService>(PaymentService(getIt<Dio>()));
+}
+
+
+Future<void> _initThemeDependencies() async {
+  print('Initializing theme dependencies');
+  // Register ThemeCubit as a singleton
+  getIt.registerLazySingleton<ThemeCubit>(() => ThemeCubit());
 }

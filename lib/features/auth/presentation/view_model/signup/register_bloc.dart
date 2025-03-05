@@ -31,6 +31,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     Emitter<RegisterState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
+    print("passwordd ${event.password}");
 
     final result = await _registerUseCase.call(RegisterUserParams(
       name: event.name,
@@ -42,7 +43,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       birthDate: event.birthDate,
       starSign: event.starSign,
       bio: event.bio,
-      // Pass the extracted filename from image upload as the profile photo
       profilePhoto: state.imageName,
     ));
 

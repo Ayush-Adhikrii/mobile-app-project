@@ -1,8 +1,9 @@
-// lib/features/message/presentation/pages/chat_page.dart
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:softwarica_student_management_bloc/app/constants/api_endpoints.dart';
+import 'package:softwarica_student_management_bloc/app/constants/theme_constant.dart';
+import 'package:softwarica_student_management_bloc/core/theme/app_theme.dart';
 import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/login/login_bloc.dart';
 
 import '../view_model/bloc/message_bloc.dart';
@@ -48,12 +49,16 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final customTheme = theme.customThemeExtension;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.pink[200],
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
         title: BlocBuilder<MessageBloc, MessageState>(
@@ -65,20 +70,21 @@ class _ChatPageState extends State<ChatPage> {
               return Row(
                 children: [
                   CircleAvatar(
-                    radius: 20,
+                    radius: isTablet ? 25 : 20,
                     backgroundImage: NetworkImage(
                       match.profilePhoto != null
                           ? '${ApiEndpoints.profilePhotoUrl}${match.profilePhoto}'
                           : '${ApiEndpoints.profilePhotoUrl}/default_profile.png',
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: ThemeConstant.mediumPadding),
                   Text(
                     match.name,
-                    style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
+                    style: theme.textTheme.displayMedium?.copyWith(
+                      fontSize: isTablet
+                          ? ThemeConstant.subheadingFontSize
+                          : ThemeConstant.bodyFontSize,
+                    ),
                   ),
                 ],
               );
@@ -86,14 +92,12 @@ class _ChatPageState extends State<ChatPage> {
             return const SizedBox.shrink();
           },
         ),
+        elevation: 1,
+        shadowColor: theme.colorScheme.onSurface.withOpacity(0.1),
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFFCE4EC), Color(0xFFE1BEE7)],
-          ),
+        decoration: BoxDecoration(
+          gradient: customTheme.scaffoldGradient,
         ),
         child: Column(
           children: [
@@ -106,19 +110,60 @@ class _ChatPageState extends State<ChatPage> {
             ),
             if (_showEmojiPicker)
               SizedBox(
-                height: 250,
+                height: isTablet ? 300 : 250,
                 child: EmojiPicker(
                   onEmojiSelected: (category, emoji) {
                     _controller.text += emoji.emoji;
                   },
+                  config: Config(
+                    emojiViewConfig: EmojiViewConfig(
+                      backgroundColor: theme.colorScheme.surface,
+                      columns: isTablet ? 10 : 8,
+                      emojiSizeMax: isTablet ? 32 : 28,
+                    ),
+                    categoryViewConfig: CategoryViewConfig(
+                      iconColor: theme.colorScheme.onSurface,
+                      iconColorSelected: theme.colorScheme.primary,
+                      indicatorColor: theme.colorScheme.primary,
+                    ),
+                  ),
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.all(16),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: ThemeConstant.mediumPadding,
+                vertical: ThemeConstant.smallPadding,
+              ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.onSurface.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.emoji_emotions, color: Colors.pink),
+                    icon: Icon(
+                      Icons.attach_file,
+                      color: theme.colorScheme.primary,
+                      size: isTablet
+                          ? ThemeConstant.mediumIconSize
+                          : ThemeConstant.smallIconSize,
+                    ),
+                    onPressed: () {},
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.emoji_emotions,
+                      color: theme.colorScheme.primary,
+                      size: isTablet
+                          ? ThemeConstant.mediumIconSize
+                          : ThemeConstant.smallIconSize,
+                    ),
                     onPressed: () {
                       setState(() {
                         _showEmojiPicker = !_showEmojiPicker;
@@ -130,24 +175,36 @@ class _ChatPageState extends State<ChatPage> {
                     child: TextField(
                       controller: _controller,
                       decoration: InputDecoration(
-                        hintText: 'Type a message...',
+                        hintText: 'Message...',
+                        hintStyle: TextStyle(
+                            color:
+                                theme.colorScheme.onSurface.withOpacity(0.5)),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: theme.colorScheme.surface.withOpacity(0.8),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.pink),
+                          borderRadius: BorderRadius.circular(
+                              ThemeConstant.largeBorderRadius),
+                          borderSide: BorderSide.none,
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: Colors.pink, width: 2),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: ThemeConstant.mediumPadding,
+                          vertical: ThemeConstant.smallPadding,
                         ),
                       ),
+                      style: TextStyle(color: theme.colorScheme.onSurface),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: ThemeConstant.smallPadding),
                   IconButton(
-                    icon: const Icon(Icons.send, color: Colors.pink),
+                    icon: Icon(
+                      Icons.send,
+                      color: _controller.text.trim().isNotEmpty
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurface.withOpacity(0.5),
+                      size: isTablet
+                          ? ThemeConstant.mediumIconSize
+                          : ThemeConstant.smallIconSize,
+                    ),
                     onPressed: () {
                       if (_controller.text.trim().isNotEmpty) {
                         print('Sending message: ${_controller.text}');
@@ -183,6 +240,10 @@ class ChatArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+
     return BlocConsumer<MessageBloc, MessageState>(
       listener: (context, state) {
         if (state is MessageLoaded && state.selectedMatchId == matchId) {
@@ -194,7 +255,9 @@ class ChatArea extends StatelessWidget {
       builder: (context, state) {
         print('ChatArea state: $state');
         if (state is MessageLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+              child:
+                  CircularProgressIndicator(color: theme.colorScheme.primary));
         } else if (state is MessageLoaded && state.selectedMatchId == matchId) {
           final match = state.matches.firstWhere((m) => m.id == matchId);
           final messages = state.messages;
@@ -202,12 +265,14 @@ class ChatArea extends StatelessWidget {
               context.read<LoginBloc>().state.authUser?.userId ?? '';
 
           return Container(
-            color: Colors.white.withOpacity(0.5),
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(ThemeConstant.mediumPadding),
             child: messages.isEmpty
                 ? Center(
-                    child: Text('Start your conversation with ${match.name}',
-                        style: const TextStyle(color: Colors.grey)))
+                    child: Text(
+                      'Start your conversation with ${match.name}',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  )
                 : ListView.builder(
                     controller: scrollController,
                     itemCount: messages.length,
@@ -219,19 +284,43 @@ class ChatArea extends StatelessWidget {
                             ? Alignment.centerRight
                             : Alignment.centerLeft,
                         child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          padding: const EdgeInsets.all(12),
+                          margin: EdgeInsets.symmetric(
+                              vertical: ThemeConstant.smallPadding),
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width *
+                                (isTablet ? 0.5 : 0.7),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: ThemeConstant.mediumPadding,
+                            vertical: ThemeConstant.smallPadding,
+                          ),
                           decoration: BoxDecoration(
                             color: isSentByUser
-                                ? Colors.pink[500]
-                                : Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
+                                ? ThemeConstant.primaryColor
+                                : theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(
+                                    ThemeConstant.mediumBorderRadius)
+                                .copyWith(
+                              topLeft: isSentByUser
+                                  ? const Radius.circular(
+                                      ThemeConstant.mediumBorderRadius)
+                                  : const Radius.circular(0),
+                              topRight: isSentByUser
+                                  ? const Radius.circular(0)
+                                  : const Radius.circular(
+                                      ThemeConstant.mediumBorderRadius),
+                            ),
                           ),
                           child: Text(
                             message.content,
                             style: TextStyle(
-                                color:
-                                    isSentByUser ? Colors.white : Colors.black),
+                              color: isSentByUser
+                                  ? theme.colorScheme.onPrimary
+                                  : theme.colorScheme.onSurface,
+                              fontSize: isTablet
+                                  ? ThemeConstant.bodyFontSize
+                                  : ThemeConstant.captionFontSize,
+                            ),
                           ),
                         ),
                       );
@@ -239,11 +328,12 @@ class ChatArea extends StatelessWidget {
                   ),
           );
         } else if (state is MessageError) {
-          return Center(child: Text('Error: ${state.message}'));
+          return Center(
+              child: Text('Error: ${state.message}',
+                  style: theme.textTheme.bodyLarge));
         }
-        return const Center(
-          child: Text('Loading chat...', style: TextStyle(color: Colors.black)),
-        );
+        return Center(
+            child: Text('Loading chat...', style: theme.textTheme.bodyLarge));
       },
     );
   }

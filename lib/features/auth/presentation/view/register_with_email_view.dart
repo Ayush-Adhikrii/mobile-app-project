@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:softwarica_student_management_bloc/app/di/di.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view/login_view.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view/user_conformation_view.dart';
-import 'package:softwarica_student_management_bloc/features/splash/presentation/view_model/splash_cubit.dart';
+import 'package:softwarica_student_management_bloc/core/theme/app_theme.dart';
+
+import '../../../../app/constants/theme_constant.dart';
+import '../../../../app/di/di.dart';
+import '../../../splash/presentation/view_model/splash_cubit.dart';
+import 'login_view.dart';
+import 'user_conformation_view.dart';
 
 class RegisterWithEmailView extends StatefulWidget {
   const RegisterWithEmailView({super.key});
@@ -14,19 +17,23 @@ class RegisterWithEmailView extends StatefulWidget {
 
 class _RegisterWithEmailViewState extends State<RegisterWithEmailView> {
   final TextEditingController _emailController = TextEditingController();
-
-  final FocusNode _focusNode = FocusNode(); // FocusNode to trigger keyboard
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    // Request focus to open the keyboard when the screen loads
     _focusNode.requestFocus();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final customTheme = theme.customThemeExtension;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -43,86 +50,78 @@ class _RegisterWithEmailViewState extends State<RegisterWithEmailView> {
           },
         ),
       ),
-      backgroundColor:
-          const Color(0xFFFDF5F7), // Light pink background for the body
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Enter your email address',
-              style: TextStyle(
-                fontSize: 20.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.black, // Text color for title
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: customTheme.scaffoldGradient,
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(isTablet ? ThemeConstant.largePadding : ThemeConstant.mediumPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: isTablet ? 80 : 60),
+              Text(
+                'Enter your email address',
+                style: theme.textTheme.displayMedium,
               ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Please enter your email address to sign up',
-              style: TextStyle(
-                fontSize: 14.0,
-                color: Colors.grey, // Text color for subtitle
+              SizedBox(height: ThemeConstant.smallPadding),
+              Text(
+                'Please enter your email address to sign up',
+                style: theme.textTheme.bodyMedium,
               ),
-            ),
-            const SizedBox(height: 16),
-            // Container to wrap the email text field with added padding
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                    color: const Color(0xFFE03368)), // Primary color border
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12.0), // Add horizontal padding
+              SizedBox(height: ThemeConstant.mediumPadding),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: theme.colorScheme.primary),
+                  borderRadius: BorderRadius.circular(ThemeConstant.mediumBorderRadius),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: ThemeConstant.mediumPadding),
                   child: TextField(
                     controller: _emailController,
-                    focusNode:
-                        _focusNode, // Focus node attached to the text field
-                    keyboardType: TextInputType.emailAddress, // Email keyboard
-                    autofocus: true, // Ensure the keyboard shows up
-                    decoration: const InputDecoration(
-                      border: InputBorder.none, // Remove inner border
-                      enabledBorder:
-                          InputBorder.none, // Ensure no border when not focused
-                      focusedBorder:
-                          InputBorder.none, // Ensure no border when focused
+                    focusNode: _focusNode,
+                    keyboardType: TextInputType.emailAddress,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
                       hintText: 'Email Address',
-                      hintStyle:
-                          TextStyle(color: Colors.grey), // Hint text color
-                      contentPadding: EdgeInsets.symmetric(
-                          vertical: 12.0), // Padding inside the field
+                      hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      contentPadding: EdgeInsets.symmetric(vertical: ThemeConstant.mediumPadding),
                     ),
-                  )),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  String email = _emailController.text;
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => UserConformationView(
-                        emailOrPhone: email,
-                        isEmail: true,
-                      ),
-                    ),
-                  );
-                },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                      const Color(0xFFE03368)), // Button background color
-                  foregroundColor: WidgetStateProperty.all(
-                      Colors.white), // Button text color
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
                 ),
-                child: const Text('Continue'),
               ),
-            ),
-          ],
+              SizedBox(height: ThemeConstant.largePadding),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: customTheme.buttonGradient,
+                  borderRadius: BorderRadius.circular(ThemeConstant.largeBorderRadius),
+                ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    String email = _emailController.text;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserConformationView(
+                          emailOrPhone: email,
+                          isEmail: true,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    'Continue',
+                    style: theme.textTheme.labelLarge,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

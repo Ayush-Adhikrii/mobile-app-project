@@ -13,6 +13,7 @@ class ThemeConstant {
   static const Color onBackgroundColor = Colors.black87;
   static const Color errorColor = Colors.redAccent;
   static const Color successColor = Colors.green;
+  static const Color warningColor = Colors.red;
 
   // Dark mode colors
   static const Color darkPrimaryColor = Color(0xFFF06292); // Lighter pink for dark mode

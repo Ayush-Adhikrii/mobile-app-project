@@ -1,80 +1,127 @@
-// lib/features/user_details/presentation/pages/profile_page.dart (updated)
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:softwarica_student_management_bloc/app/constants/api_endpoints.dart';
 import 'package:softwarica_student_management_bloc/app/constants/theme_constant.dart';
 import 'package:softwarica_student_management_bloc/app/di/di.dart';
+import 'package:softwarica_student_management_bloc/core/theme/app_theme.dart';
+import 'package:softwarica_student_management_bloc/core/theme/theme_cubit.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
 import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/login/login_bloc.dart';
 import 'package:softwarica_student_management_bloc/features/home/presentation/view_model/home_cubit.dart';
+import 'package:softwarica_student_management_bloc/features/photos/domain/entity/photo_entity.dart';
+import 'package:softwarica_student_management_bloc/features/photos/presentation/view_model/bloc/photos_bloc.dart';
+import 'package:softwarica_student_management_bloc/features/photos/presentation/view_model/bloc/photos_event.dart';
+import 'package:softwarica_student_management_bloc/features/photos/presentation/view_model/bloc/photos_state.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/domain/entity/user_details_entity.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/presentation/view_model/bloc/user_details_bloc.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/presentation/view_model/bloc/user_details_event.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/presentation/view_model/bloc/user_details_state.dart';
 
-import '../../../photos/domain/entity/photo_entity.dart';
-import '../../../photos/presentation/view_model/bloc/photos_bloc.dart';
-import '../../../photos/presentation/view_model/bloc/photos_event.dart';
-import '../../../photos/presentation/view_model/bloc/photos_state.dart';
 import 'widgets/edit_field_modal.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
+  DateTime? _lastShakeTime;
+  static const double logoutShakeThreshold = 50.0; // High threshold for logout
+  static const int shakeCooldown = 1000;
+
+  @override
+  void initState() {
+    super.initState();
+    _initLogoutDetection();
+  }
+
+  void _initLogoutDetection() {
+    _accelerometerSubscription = accelerometerEvents.listen((event) {
+      final now = DateTime.now();
+      if (_lastShakeTime != null &&
+          now.difference(_lastShakeTime!).inMilliseconds < shakeCooldown) {
+        return;
+      }
+
+      if (event.x.abs() > logoutShakeThreshold ||
+          event.y.abs() > logoutShakeThreshold ||
+          event.z.abs() > logoutShakeThreshold) {
+        _lastShakeTime = now;
+        _logout(context);
+      }
+    });
+  }
+
+  void _logout(BuildContext context) {
+    context.read<HomeCubit>().logout(context);
+  }
+
+  @override
+  void dispose() {
+    _accelerometerSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    print('ProfilePage build called');
+    final theme = Theme.of(context);
+    final customTheme = theme.customThemeExtension;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: getIt<LoginBloc>()),
         BlocProvider.value(value: getIt<UserDetailsBloc>()),
         BlocProvider.value(value: getIt<PhotosBloc>()),
       ],
-      child: Builder(
-        builder: (context) {
-          final userId = getIt<LoginBloc>().state.authUser?.userId ?? '';
-          if (userId.isNotEmpty) {
-            if (!context.read<UserDetailsBloc>().isClosed) {
-              context.read<UserDetailsBloc>().add(FetchUserDetails(userId));
-            } else {
-              print('UserDetailsBloc is closed, skipping FetchUserDetails');
-            }
-            if (!context.read<PhotosBloc>().isClosed) {
-              context.read<PhotosBloc>().add(FetchPhotos(userId));
-            } else {
-              print('PhotosBloc is closed, skipping FetchPhotos');
-            }
-          } else {
-            print('No userId available, skipping fetch events');
-          }
-          return Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFFCE4EC), Color(0xFFE1BEE7)],
-              ),
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 1,
+          shadowColor: theme.colorScheme.onSurface.withOpacity(0.1),
+          toolbarHeight: isTablet ? 40 : 30,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: ThemeConstant.smallPadding),
+            child: Image.asset(
+              'assets/icons/plain_logo.png',
+              height: isTablet ? 30 : 20,
+              width: isTablet ? 30 : 20,
+              fit: BoxFit.contain,
             ),
-            child: SafeArea(
-              child: CustomScrollView(
-                slivers: [
-                  SliverAppBar(
-                    title: const Text('My Profile'),
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    centerTitle: true,
-                    titleTextStyle:
-                        Theme.of(context).appBarTheme.titleTextStyle,
-                  ),
-                  SliverToBoxAdapter(child: _ProfileContent()),
-                ],
-              ),
+          ),
+          leadingWidth: isTablet ? 40 : 30,
+          title: Center(
+            child: Image.asset(
+              'assets/icons/text_logo.png',
+              height: isTablet ? 30 : 20,
+              fit: BoxFit.contain,
             ),
-          );
-        },
+          ),
+          backgroundColor: theme.colorScheme.surface,
+        ),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: customTheme.scaffoldGradient,
+          ),
+          child: SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                // Use SliverToBoxAdapter instead of SliverFillRemaining to allow scrolling
+                SliverToBoxAdapter(
+                  child: _ProfileContent(),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -92,14 +139,32 @@ class __ProfileContentState extends State<_ProfileContent> {
       TextEditingController();
   bool _isChangingPassword = false;
   String? _error;
+  bool _hasFetched = false;
 
   @override
   void initState() {
     super.initState();
     print('ProfileContent initState');
+    _fetchData();
+  }
+
+  void _fetchData() {
     final userId = context.read<LoginBloc>().state.authUser?.userId ?? '';
-    if (userId.isNotEmpty && !context.read<PhotosBloc>().isClosed) {
-      context.read<PhotosBloc>().add(FetchPhotos(userId));
+    if (userId.isNotEmpty && !_hasFetched) {
+      print('Dispatching FetchUserDetails and FetchPhotos for userId: $userId');
+      if (!context.read<UserDetailsBloc>().isClosed) {
+        context.read<UserDetailsBloc>().add(FetchUserDetails(userId));
+      } else {
+        print('UserDetailsBloc is closed, cannot dispatch FetchUserDetails');
+      }
+      if (!context.read<PhotosBloc>().isClosed) {
+        context.read<PhotosBloc>().add(FetchPhotos(userId));
+      } else {
+        print('PhotosBloc is closed, cannot dispatch FetchPhotos');
+      }
+      _hasFetched = true;
+    } else if (userId.isEmpty) {
+      print('No userId available, skipping fetch events');
     }
   }
 
@@ -112,68 +177,101 @@ class __ProfileContentState extends State<_ProfileContent> {
       if (!context.read<PhotosBloc>().isClosed) {
         context.read<PhotosBloc>().add(UploadPhoto(userId, image));
       }
-    } 
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    return BlocBuilder<LoginBloc, LoginState>(
-      builder: (context, loginState) {
+    final isTablet = screenWidth > 600;
+    return BlocBuilder<ThemeCubit, ThemeState>(
+      builder: (context, themeState) {
         print(
-            'LoginBloc state: isLoading=${loginState.isLoading}, isSuccess=${loginState.isSuccess}, authUser=${loginState.authUser}');
-        final authUser = loginState.authUser;
-        if (authUser == null) {
-          print('authUser is null, showing login prompt');
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Please log in to view your profile'),
-                ElevatedButton(
-                  onPressed: () =>
-                      Navigator.pushReplacementNamed(context, '/login'),
-                  child: const Text('Go to Login'),
-                ),
-              ],
-            ),
-          );
-        }
-        return BlocBuilder<UserDetailsBloc, UserDetailsState>(
-          builder: (context, detailsState) {
-            print('UserDetailsBloc state: $detailsState');
-            if (detailsState is UserDetailsLoading) {
-              print('UserDetailsBloc is loading');
-              return const Center(child: CircularProgressIndicator());
-            } else if (detailsState is UserDetailsLoaded) {
-              final details = detailsState.userDetails;
-              return _buildProfileDetails(
-                  context, authUser, details, screenWidth);
-            } else if (detailsState is UserDetailsError) {
-              print('UserDetailsBloc error: ${detailsState.message}');
-              return Center(child: Text('Error: ${detailsState.message}'));
+            'ProfilePage rebuilding due to ThemeCubit state change: isDarkMode=${themeState.isDarkMode}');
+        return BlocListener<UserDetailsBloc, UserDetailsState>(
+          listener: (context, state) {
+            print('UserDetailsBloc state changed: $state');
+            if (state is UserDetailsError) {
+              print('UserDetailsBloc error: ${state.message}');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${state.message}')),
+              );
             }
-            print('UserDetailsBloc initial or unknown state');
-            return const Center(child: Text('No user details available yet'));
           },
+          child: BlocBuilder<LoginBloc, LoginState>(
+            builder: (context, loginState) {
+              print(
+                  'LoginBloc state: isLoading=${loginState.isLoading}, isSuccess=${loginState.isSuccess}, authUser=${loginState.authUser}');
+              final authUser = loginState.authUser;
+              if (authUser == null) {
+                print('authUser is null, showing login prompt');
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Please log in to view your profile',
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      SizedBox(height: ThemeConstant.mediumPadding),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: Theme.of(context)
+                              .customThemeExtension
+                              .buttonGradient,
+                          borderRadius: BorderRadius.circular(
+                              ThemeConstant.largeBorderRadius),
+                        ),
+                        child: ElevatedButton(
+                          onPressed: () =>
+                              Navigator.pushReplacementNamed(context, '/login'),
+                          child: Text('Go to Login',
+                              style: Theme.of(context).textTheme.labelLarge),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return BlocBuilder<UserDetailsBloc, UserDetailsState>(
+                builder: (context, detailsState) {
+                  print('UserDetailsBloc state: $detailsState');
+                  if (detailsState is UserDetailsLoading) {
+                    print('UserDetailsBloc is loading');
+                    return Center(
+                        child: CircularProgressIndicator(
+                            color: Theme.of(context).colorScheme.primary));
+                  } else if (detailsState is UserDetailsLoaded) {
+                    final details = detailsState.userDetails;
+                    return _buildProfileDetails(
+                        context, authUser, details, screenWidth, isTablet);
+                  } else if (detailsState is UserDetailsError) {
+                    return Center(
+                        child: Text('Error: ${detailsState.message}',
+                            style: Theme.of(context).textTheme.bodyLarge));
+                  }
+                  print('UserDetailsBloc initial or unknown state');
+                  return Center(
+                      child: Text('No user details available yet',
+                          style: Theme.of(context).textTheme.bodyLarge));
+                },
+              );
+            },
+          ),
         );
       },
     );
   }
 
   Widget _buildProfileDetails(BuildContext context, AuthEntity authUser,
-      UserDetailsEntity details, double screenWidth) {
+      UserDetailsEntity details, double screenWidth, bool isTablet) {
     return Padding(
-      padding: EdgeInsets.all(screenWidth * 0.04),
+      padding: EdgeInsets.all(
+          isTablet ? ThemeConstant.largePadding : ThemeConstant.mediumPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           BlocConsumer<PhotosBloc, PhotosState>(
             listener: (context, state) {
-             
-              if (!context.read<PhotosBloc>().isClosed) {
-                context.read<PhotosBloc>().add(FetchPhotos(authUser.userId!));
-              }
+              // Listener can remain empty if no specific action is needed
             },
             builder: (context, photosState) {
               List<PhotoEntity> photos = [];
@@ -190,59 +288,84 @@ class __ProfileContentState extends State<_ProfileContent> {
               } else if (photosState is PhotosLoading) {
                 print('PhotosBloc is loading');
               }
-              return _buildPhotoGrid(authUser, photos, screenWidth);
+              return _buildPhotoGrid(authUser, photos, screenWidth, isTablet);
             },
           ),
-          SizedBox(height: screenWidth * 0.05),
-          _buildAddPhotoButton(screenWidth, authUser.userId!),
-          SizedBox(height: screenWidth * 0.05),
-          _buildUserInfo(authUser, screenWidth),
-          SizedBox(height: screenWidth * 0.075),
+          SizedBox(
+              height: isTablet
+                  ? ThemeConstant.largePadding
+                  : ThemeConstant.mediumPadding),
+          _buildAddPhotoButton(screenWidth, authUser.userId!, isTablet),
+          SizedBox(
+              height: isTablet
+                  ? ThemeConstant.largePadding
+                  : ThemeConstant.mediumPadding),
+          _buildUserInfo(authUser, screenWidth, isTablet),
+          SizedBox(
+              height: isTablet
+                  ? ThemeConstant.largePadding * 1.5
+                  : ThemeConstant.largePadding),
           Text(
             'Additional Info',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(color: Colors.grey[600]),
+            style: Theme.of(context).textTheme.displayMedium,
           ),
-          SizedBox(height: screenWidth * 0.03),
-          _buildUserDetails(details, screenWidth, authUser.userId!),
-          SizedBox(height: screenWidth * 0.075),
+          SizedBox(
+              height: isTablet
+                  ? ThemeConstant.mediumPadding
+                  : ThemeConstant.smallPadding),
+          _buildUserDetails(details, screenWidth, authUser.userId!, isTablet),
+          SizedBox(
+              height: isTablet
+                  ? ThemeConstant.largePadding * 1.5
+                  : ThemeConstant.largePadding),
+          Text(
+            'Theme Settings',
+            style: Theme.of(context).textTheme.displayMedium,
+          ),
+          SizedBox(
+              height: isTablet
+                  ? ThemeConstant.mediumPadding
+                  : ThemeConstant.smallPadding),
+          _buildThemeSettingsSection(context, screenWidth, isTablet),
+          SizedBox(
+              height: isTablet
+                  ? ThemeConstant.largePadding * 1.5
+                  : ThemeConstant.largePadding),
           Text(
             'Security',
             style: Theme.of(context)
                 .textTheme
-                .titleMedium
-                ?.copyWith(color: Colors.redAccent),
+                .displayMedium
+                ?.copyWith(color: ThemeConstant.errorColor),
           ),
-          SizedBox(height: screenWidth * 0.03),
-          _buildSecuritySection(context, screenWidth),
+          SizedBox(
+              height: isTablet
+                  ? ThemeConstant.mediumPadding
+                  : ThemeConstant.smallPadding),
+          _buildSecuritySection(context, screenWidth, isTablet),
         ],
       ),
     );
   }
 
-  Widget _buildPhotoGrid(
-      AuthEntity authUser, List<PhotoEntity> photos, double screenWidth) {
+  Widget _buildPhotoGrid(AuthEntity authUser, List<PhotoEntity> photos,
+      double screenWidth, bool isTablet) {
     return Container(
-      padding: EdgeInsets.all(screenWidth * 0.03),
+      padding: EdgeInsets.all(
+          isTablet ? ThemeConstant.mediumPadding : ThemeConstant.smallPadding),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(ThemeConstant.mediumBorderRadius),
+        boxShadow: Theme.of(context).customThemeExtension.cardShadow,
       ),
       child: GridView.count(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         crossAxisCount: 3,
-        crossAxisSpacing: screenWidth * 0.025,
-        mainAxisSpacing: screenWidth * 0.025,
+        crossAxisSpacing:
+            isTablet ? ThemeConstant.mediumPadding : ThemeConstant.smallPadding,
+        mainAxisSpacing:
+            isTablet ? ThemeConstant.mediumPadding : ThemeConstant.smallPadding,
         children: [
           _buildPhotoCard(
             authUser.profilePhoto != null && authUser.profilePhoto!.isNotEmpty
@@ -250,36 +373,42 @@ class __ProfileContentState extends State<_ProfileContent> {
                 : null,
             isMain: true,
             screenWidth: screenWidth,
+            isTablet: isTablet,
           ),
           _buildPhotoCard(
             photos.isNotEmpty
                 ? '${ApiEndpoints.userImageUrl}${photos[0].image}'
                 : null,
             screenWidth: screenWidth,
+            isTablet: isTablet,
           ),
           _buildPhotoCard(
             photos.length > 1
                 ? '${ApiEndpoints.userImageUrl}${photos[1].image}'
                 : null,
             screenWidth: screenWidth,
+            isTablet: isTablet,
           ),
           _buildPhotoCard(
             photos.length > 2
                 ? '${ApiEndpoints.userImageUrl}${photos[2].image}'
                 : null,
             screenWidth: screenWidth,
+            isTablet: isTablet,
           ),
           _buildPhotoCard(
             photos.length > 3
                 ? '${ApiEndpoints.userImageUrl}${photos[3].image}'
                 : null,
             screenWidth: screenWidth,
+            isTablet: isTablet,
           ),
           _buildPhotoCard(
             photos.length > 4
                 ? '${ApiEndpoints.userImageUrl}${photos[4].image}'
                 : null,
             screenWidth: screenWidth,
+            isTablet: isTablet,
           ),
         ],
       ),
@@ -287,92 +416,94 @@ class __ProfileContentState extends State<_ProfileContent> {
   }
 
   Widget _buildPhotoCard(String? photoUrl,
-      {bool isMain = false, required double screenWidth}) {
+      {bool isMain = false,
+      required double screenWidth,
+      required bool isTablet}) {
     return Container(
-      height: isMain ? screenWidth * 0.3 : screenWidth * 0.15,
+      height: isMain
+          ? (isTablet ? screenWidth * 0.2 : screenWidth * 0.3)
+          : (isTablet ? screenWidth * 0.1 : screenWidth * 0.15),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.grey[200],
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(ThemeConstant.mediumBorderRadius),
+        color: Theme.of(context).colorScheme.surface,
+        boxShadow: isMain
+            ? [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : Theme.of(context).customThemeExtension.cardShadow,
+        border: isMain
+            ? Border.all(color: Theme.of(context).colorScheme.primary, width: 3)
+            : null,
       ),
       child: photoUrl != null && photoUrl.isNotEmpty
           ? ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius:
+                  BorderRadius.circular(ThemeConstant.mediumBorderRadius),
               child: Image.network(
                 photoUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   print('Image load error: $error');
-                  return const Icon(Icons.error);
+                  return Icon(Icons.error,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.5));
                 },
               ),
             )
-          : const Icon(Icons.add, color: ThemeConstant.primaryColor),
+          : Icon(Icons.add, color: Theme.of(context).colorScheme.primary),
     );
   }
 
-  Widget _buildAddPhotoButton(double screenWidth, String userId) {
+  Widget _buildAddPhotoButton(
+      double screenWidth, String userId, bool isTablet) {
     return BlocListener<PhotosBloc, PhotosState>(
       listener: (context, state) {
-        
+        // Listener can remain empty if no specific action is needed
       },
       child: SizedBox(
         width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () => _pickAndUploadImage(context, userId),
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.symmetric(vertical: screenWidth * 0.0375),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-            elevation: 0,
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.transparent,
-          ).copyWith(
-            overlayColor: WidgetStateProperty.all(Colors.transparent),
-            shadowColor: WidgetStateProperty.all(Colors.black.withOpacity(0.2)),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: Theme.of(context).customThemeExtension.buttonGradient,
+            borderRadius:
+                BorderRadius.circular(ThemeConstant.largeBorderRadius),
           ),
-          child: Ink(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  ThemeConstant.primaryColor,
-                  ThemeConstant.primaryColor.withOpacity(0.8)
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(30),
+          child: ElevatedButton(
+            onPressed: () => _pickAndUploadImage(context, userId),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(
+                  vertical: isTablet
+                      ? ThemeConstant.mediumPadding
+                      : screenWidth * 0.0375),
             ),
-            child: Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.symmetric(vertical: screenWidth * 0.0375),
-              child: const Text('Add Photos', style: TextStyle(fontSize: 16)),
-            ),
+            child: Text('Add Photos',
+                style: Theme.of(context).textTheme.labelLarge),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildUserInfo(AuthEntity authUser, double screenWidth) {
+  Widget _buildUserInfo(
+      AuthEntity authUser, double screenWidth, bool isTablet) {
     return Container(
-      padding: EdgeInsets.all(screenWidth * 0.05),
+      padding: EdgeInsets.all(
+          isTablet ? ThemeConstant.largePadding : screenWidth * 0.05),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(ThemeConstant.mediumBorderRadius),
+        boxShadow: Theme.of(context).customThemeExtension.cardShadow,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -384,21 +515,19 @@ class __ProfileContentState extends State<_ProfileContent> {
                 '${authUser.name}, ${_calculateAge(authUser.birthDate ?? '')}',
                 style: Theme.of(context)
                     .textTheme
-                    .titleLarge
+                    .displayMedium
                     ?.copyWith(fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: ThemeConstant.smallPadding),
               Text(
                 '${authUser.gender ?? 'N/A'}, ${authUser.starSign ?? 'N/A'}',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Colors.grey[600]),
+                style: Theme.of(context).textTheme.bodyLarge,
               ),
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.edit, color: ThemeConstant.primaryColor),
+            icon:
+                Icon(Icons.edit, color: Theme.of(context).colorScheme.primary),
             onPressed: () {
               Navigator.pushNamed(context, '/update_profile',
                   arguments: authUser);
@@ -409,20 +538,15 @@ class __ProfileContentState extends State<_ProfileContent> {
     );
   }
 
-  Widget _buildUserDetails(
-      UserDetailsEntity details, double screenWidth, String userId) {
+  Widget _buildUserDetails(UserDetailsEntity details, double screenWidth,
+      String userId, bool isTablet) {
     return Container(
-      padding: EdgeInsets.all(screenWidth * 0.03),
+      padding: EdgeInsets.all(
+          isTablet ? ThemeConstant.mediumPadding : screenWidth * 0.03),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(ThemeConstant.mediumBorderRadius),
+        boxShadow: Theme.of(context).customThemeExtension.cardShadow,
       ),
       child: Column(
         children: _fields.map((field) {
@@ -432,6 +556,7 @@ class __ProfileContentState extends State<_ProfileContent> {
             field['label'] as String,
             value ?? 'Add',
             () => _showEditModal(context, field, value, userId),
+            isTablet,
           );
         }).toList(),
       ),
@@ -461,16 +586,21 @@ class __ProfileContentState extends State<_ProfileContent> {
     }
   }
 
-  Widget _buildDetailRow(
-      IconData icon, String label, String value, VoidCallback onTap) {
+  Widget _buildDetailRow(IconData icon, String label, String value,
+      VoidCallback onTap, bool isTablet) {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: EdgeInsets.symmetric(
+            vertical: isTablet
+                ? ThemeConstant.mediumPadding
+                : ThemeConstant.smallPadding),
         child: Row(
           children: [
-            Icon(icon, color: ThemeConstant.primaryColor, size: 24),
-            const SizedBox(width: 16),
+            Icon(icon,
+                color: Theme.of(context).colorScheme.primary,
+                size: isTablet ? ThemeConstant.mediumIconSize : 24),
+            SizedBox(width: ThemeConstant.mediumPadding),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -484,15 +614,13 @@ class __ProfileContentState extends State<_ProfileContent> {
                   ),
                   Text(
                     value,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: Colors.grey[600]),
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: ThemeConstant.primaryColor),
+            Icon(Icons.chevron_right,
+                color: Theme.of(context).colorScheme.primary),
           ],
         ),
       ),
@@ -507,9 +635,9 @@ class __ProfileContentState extends State<_ProfileContent> {
       builder: (modalContext) => Container(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom + 40,
-          left: 16,
-          right: 16,
-          top: 16,
+          left: ThemeConstant.mediumPadding,
+          right: ThemeConstant.mediumPadding,
+          top: ThemeConstant.mediumPadding,
         ),
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -539,86 +667,101 @@ class __ProfileContentState extends State<_ProfileContent> {
     );
   }
 
-  Widget _buildSecuritySection(BuildContext context, double screenWidth) {
+  Widget _buildThemeSettingsSection(
+      BuildContext context, double screenWidth, bool isTablet) {
+    return Container(
+      padding: EdgeInsets.all(
+          isTablet ? ThemeConstant.mediumPadding : screenWidth * 0.03),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(ThemeConstant.mediumBorderRadius),
+        boxShadow: Theme.of(context).customThemeExtension.cardShadow,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Dark Mode',
+            style: Theme.of(context)
+                .textTheme
+                .bodyLarge
+                ?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          Switch(
+            value: context.watch<ThemeCubit>().state.isDarkMode,
+            onChanged: (value) {
+              context.read<ThemeCubit>().setDarkMode(value);
+            },
+            activeColor: Theme.of(context).colorScheme.primary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecuritySection(
+      BuildContext context, double screenWidth, bool isTablet) {
     return Column(
       children: [
         if (!_isChangingPassword) ...[
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => setState(() => _isChangingPassword = true),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: screenWidth * 0.0375),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30)),
-                elevation: 0,
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.transparent,
-              ).copyWith(
-                overlayColor: WidgetStateProperty.all(Colors.transparent),
-                shadowColor:
-                    WidgetStateProperty.all(Colors.black.withOpacity(0.2)),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: Theme.of(context).customThemeExtension.buttonGradient,
+                borderRadius:
+                    BorderRadius.circular(ThemeConstant.largeBorderRadius),
               ),
-              child: Ink(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      ThemeConstant.primaryColor,
-                      ThemeConstant.primaryColor.withOpacity(0.8)
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(30),
+              child: ElevatedButton(
+                onPressed: () => setState(() => _isChangingPassword = true),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(
+                      vertical: isTablet
+                          ? ThemeConstant.mediumPadding
+                          : screenWidth * 0.0375),
                 ),
-                child: Container(
-                  alignment: Alignment.center,
-                  padding: EdgeInsets.symmetric(vertical: screenWidth * 0.0375),
-                  child: const Text('Change Password',
-                      style: TextStyle(fontSize: 16)),
-                ),
+                child: Text('Change Password',
+                    style: Theme.of(context).textTheme.labelLarge),
               ),
             ),
           ),
-          SizedBox(height: screenWidth * 0.04),
+          SizedBox(
+              height:
+                  isTablet ? ThemeConstant.mediumPadding : screenWidth * 0.04),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                context.read<HomeCubit>().logout(context);
-              },
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: screenWidth * 0.0375),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30)),
-                elevation: 0,
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.transparent,
-              ).copyWith(
-                overlayColor: WidgetStateProperty.all(Colors.transparent),
-                shadowColor:
-                    WidgetStateProperty.all(Colors.black.withOpacity(0.2)),
-              ),
-              child: Ink(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.redAccent, Colors.red],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(30),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    ThemeConstant.errorColor,
+                    ThemeConstant.errorColor.withOpacity(0.8)
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: Container(
-                  alignment: Alignment.center,
-                  padding: EdgeInsets.symmetric(vertical: screenWidth * 0.0375),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.logout, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text('Log Out', style: TextStyle(fontSize: 16)),
-                    ],
-                  ),
+                borderRadius:
+                    BorderRadius.circular(ThemeConstant.largeBorderRadius),
+              ),
+              child: ElevatedButton(
+                onPressed: () {
+                  context.read<HomeCubit>().logout(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(
+                      vertical: isTablet
+                          ? ThemeConstant.mediumPadding
+                          : screenWidth * 0.0375),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.logout,
+                        color: Theme.of(context).colorScheme.onPrimary),
+                    SizedBox(width: ThemeConstant.smallPadding),
+                    Text('Log Out',
+                        style: Theme.of(context).textTheme.labelLarge),
+                  ],
                 ),
               ),
             ),
@@ -626,27 +769,43 @@ class __ProfileContentState extends State<_ProfileContent> {
         ] else ...[
           if (_error != null)
             Padding(
-              padding: EdgeInsets.only(bottom: screenWidth * 0.02),
-              child: Text(_error!, style: const TextStyle(color: Colors.red)),
+              padding: EdgeInsets.only(
+                  bottom: isTablet
+                      ? ThemeConstant.mediumPadding
+                      : screenWidth * 0.02),
+              child: Text(_error!,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: ThemeConstant.errorColor)),
             ),
           TextField(
             controller: _oldPasswordController,
             decoration: const InputDecoration(labelText: 'Old Password'),
             obscureText: true,
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
-          SizedBox(height: screenWidth * 0.03),
+          SizedBox(
+              height:
+                  isTablet ? ThemeConstant.mediumPadding : screenWidth * 0.03),
           TextField(
             controller: _newPasswordController,
             decoration: const InputDecoration(labelText: 'New Password'),
             obscureText: true,
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
-          SizedBox(height: screenWidth * 0.03),
+          SizedBox(
+              height:
+                  isTablet ? ThemeConstant.mediumPadding : screenWidth * 0.03),
           TextField(
             controller: _confirmPasswordController,
             decoration: const InputDecoration(labelText: 'Confirm Password'),
             obscureText: true,
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
-          SizedBox(height: screenWidth * 0.05),
+          SizedBox(
+              height:
+                  isTablet ? ThemeConstant.largePadding : screenWidth * 0.05),
           ValueListenableBuilder(
             valueListenable: _oldPasswordController,
             builder: (context, oldValue, _) => ValueListenableBuilder(
@@ -661,61 +820,57 @@ class __ProfileContentState extends State<_ProfileContent> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (isFormEmpty) {
-                              setState(() {
-                                _isChangingPassword = false;
-                                _error = null;
-                                _oldPasswordController.clear();
-                                _newPasswordController.clear();
-                                _confirmPasswordController.clear();
-                              });
-                            } else {
-                              _handleChangePassword(context);
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                                vertical: screenWidth * 0.0375),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)),
-                            elevation: 0,
-                            foregroundColor:
-                                isFormEmpty ? Colors.grey[600] : Colors.white,
-                            backgroundColor: isFormEmpty
-                                ? Colors.grey[200]
-                                : Colors.transparent,
-                          ).copyWith(
-                            overlayColor:
-                                WidgetStateProperty.all(Colors.transparent),
-                          ),
-                          child: Ink(
-                            decoration: !isFormEmpty
-                                ? BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        ThemeConstant.primaryColor,
-                                        ThemeConstant.primaryColor
-                                            .withOpacity(0.8),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(30),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: isFormEmpty
+                                ? LinearGradient(
+                                    colors: [
+                                      Colors.grey.shade200,
+                                      Colors.grey.shade400
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   )
-                                : null,
-                            child: Container(
-                              alignment: Alignment.center,
+                                : Theme.of(context)
+                                    .customThemeExtension
+                                    .buttonGradient,
+                            borderRadius: BorderRadius.circular(
+                                ThemeConstant.largeBorderRadius),
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (isFormEmpty) {
+                                setState(() {
+                                  _isChangingPassword = false;
+                                  _error = null;
+                                  _oldPasswordController.clear();
+                                  _newPasswordController.clear();
+                                  _confirmPasswordController.clear();
+                                });
+                              } else {
+                                _handleChangePassword(context);
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
                               padding: EdgeInsets.symmetric(
-                                  vertical: screenWidth * 0.0375),
-                              child: Text(
-                                isFormEmpty ? 'Cancel' : 'Save',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: isFormEmpty ? null : Colors.white,
-                                ),
-                              ),
+                                  vertical: isTablet
+                                      ? ThemeConstant.mediumPadding
+                                      : screenWidth * 0.0375),
+                            ),
+                            child: Text(
+                              isFormEmpty ? 'Cancel' : 'Save',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(
+                                    color: isFormEmpty
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                  ),
                             ),
                           ),
                         ),
@@ -760,7 +915,9 @@ class __ProfileContentState extends State<_ProfileContent> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cannot change password')),
+        SnackBar(
+            content: Text('Cannot change password',
+                style: Theme.of(context).textTheme.bodyLarge)),
       );
     }
   }

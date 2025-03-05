@@ -70,6 +70,7 @@ class AuthEntity extends Equatable {
       'phoneNumber': phoneNumber,
       'bio': bio,
       'userName': userName,
+      'password': password,
       'profilePhoto': profilePhoto,
     };
   }

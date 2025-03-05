@@ -45,6 +45,8 @@ dependencies:
   socket_io_client: ^3.0.2
   emoji_picker_flutter: ^4.3.0
   esewa_flutter: ^2.0.0
+  sensors_plus: ^5.0.1
+ 
 
 dev_dependencies:
   flutter_test:

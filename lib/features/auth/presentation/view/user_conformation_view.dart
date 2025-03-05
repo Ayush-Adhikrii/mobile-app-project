@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:softwarica_student_management_bloc/app/di/di.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view/register_view.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/signup/register_bloc.dart';
+import 'package:softwarica_student_management_bloc/core/theme/app_theme.dart';
+
+import '../../../../app/constants/theme_constant.dart';
+import '../../../../app/di/di.dart';
+import '../view_model/signup/register_bloc.dart';
+import 'register_view.dart';
 
 class UserConformationView extends StatefulWidget {
   final String emailOrPhone;
@@ -19,158 +22,177 @@ class UserConformationView extends StatefulWidget {
 }
 
 class _UserConformationViewState extends State<UserConformationView> {
-  // A list to keep track of the digits entered for verification
   List<String> verificationCode = ["", "", "", "", ""];
+  List<FocusNode> focusNodes = List.generate(5, (index) => FocusNode());
+  List<TextEditingController> controllers =
+      List.generate(5, (index) => TextEditingController());
 
-  // Function to handle the digit input
+  @override
+  void initState() {
+    super.initState();
+    focusNodes[0].requestFocus();
+  }
+
+  @override
+  void dispose() {
+    for (var node in focusNodes) {
+      node.dispose();
+    }
+    for (var controller in controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
   void onChanged(String value, int index) {
     setState(() {
       verificationCode[index] = value;
+      controllers[index].text = value;
     });
 
     if (value.isNotEmpty && index < 4) {
-      // Automatically move to the next field after entering a digit
-      FocusScope.of(context).nextFocus();
+      focusNodes[index].unfocus();
+      FocusScope.of(context).requestFocus(focusNodes[index + 1]);
+    } else if (value.isEmpty && index > 0) {
+      focusNodes[index].unfocus();
+      FocusScope.of(context).requestFocus(focusNodes[index - 1]);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final customTheme = theme.customThemeExtension;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    final circleSize = isTablet ? 60.0 : 50.0;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor:
-            const Color(0xFFFDF5F7), // Light pink background for AppBar
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Navigates back to the previous screen
+            Navigator.pop(context);
           },
         ),
       ),
-      backgroundColor:
-          const Color(0xFFFDF5F7), // Light pink background for the body
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Enter verificaton code',
-              style: TextStyle(
-                fontSize: 20.0,
-                fontWeight: FontWeight.bold,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: customTheme.scaffoldGradient,
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(isTablet
+              ? ThemeConstant.largePadding
+              : ThemeConstant.mediumPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: isTablet ? 80 : 60),
+              Text(
+                'Enter verification code',
+                style: theme.textTheme.displayMedium,
               ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Text(
-              'Please enter the verification code we sent you.',
-              style: TextStyle(
-                fontSize: 14.0,
-                fontWeight: FontWeight.w100,
-                color: Colors.grey,
+              SizedBox(height: ThemeConstant.smallPadding),
+              Text(
+                'Please enter the verification code we sent you.',
+                style: theme.textTheme.bodyMedium,
               ),
-            ),
-            const SizedBox(height: 20),
-            // Create a row of 5 circles for code entry
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(5, (index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 7.0), // Reduced gap between circles
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: verificationCode[index].isEmpty
-                          ? Colors.white
-                          : const Color(0xFFE03368), // Fill color for circle
-                      border: Border.all(
-                        color: const Color(0xFFE03368),
-                        width: 2,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        verificationCode[index], // Display the digit
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: verificationCode[index].isEmpty
-                              ? Colors.black
-                              : Colors.white, // Text color for filled circles
+              SizedBox(height: ThemeConstant.largePadding),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: ThemeConstant.smallPadding),
+                    child: Container(
+                      width: circleSize,
+                      height: circleSize,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: verificationCode[index].isEmpty
+                            ? theme.colorScheme.surface
+                            : theme.colorScheme.primary,
+                        border: Border.all(
+                          color: theme.colorScheme.primary,
+                          width: 2,
                         ),
                       ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(height: 20),
-            // Create TextField for each circle (disabled)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(5, (index) {
-                return SizedBox(
-                  width: 50,
-                  child: TextField(
-                    autofocus: true,
-                    textAlign: TextAlign.center,
-                    keyboardType: TextInputType.number,
-                    maxLength: 1,
-                    onChanged: (value) {
-                      onChanged(value, index);
-                    },
-                    decoration: const InputDecoration(
-                      counterText: "", // Hide the counter text
-                      border: InputBorder.none, // Remove the border
-                      hintText: "", // Remove hint text (_)
-                      filled: true,
-                      fillColor: Colors.transparent,
-                    ),
-                    style: const TextStyle(fontSize: 1, height: 0.1),
-                    enabled: true, // Keep the field enabled for typing
-                    cursorColor:
-                        Colors.transparent, // Remove the cursor visibility
-                  ),
-                );
-              }),
-            ),
-
-            // Confirm button placed just below the circles
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Handle confirmation button press
-                  print('Verification code: ${verificationCode.join()}');
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BlocProvider.value(
-                        value: getIt<RegisterBloc>(),
-                        child: RegisterView(
-                          emailOrPhone: widget.emailOrPhone,
-                          isEmail: widget.isEmail,
+                      child: Center(
+                        child: Text(
+                          verificationCode[index],
+                          style: TextStyle(
+                            fontSize: isTablet ? 28 : 24,
+                            fontWeight: FontWeight.bold,
+                            color: verificationCode[index].isEmpty
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.onPrimary,
+                          ),
                         ),
                       ),
                     ),
                   );
-                  // Add your confirmation logic here
-                },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                      const Color(0xFFE03368)), // Button color
-                  foregroundColor:
-                      WidgetStateProperty.all(Colors.white), // Text color
-                ),
-                child: const Text('Confirm'),
+                }),
               ),
-            ),
-          ],
+              SizedBox(height: ThemeConstant.mediumPadding),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return SizedBox(
+                    width: circleSize,
+                    child: TextField(
+                      controller: controllers[index],
+                      focusNode: focusNodes[index],
+                      autofocus: index == 0,
+                      textAlign: TextAlign.center,
+                      keyboardType: TextInputType.number,
+                      maxLength: 1,
+                      onChanged: (value) => onChanged(value, index),
+                      decoration: const InputDecoration(
+                        counterText: "",
+                        border: InputBorder.none,
+                        hintText: "",
+                        filled: true,
+                        fillColor: Colors.transparent,
+                      ),
+                      style: const TextStyle(fontSize: 1, height: 0.1),
+                      cursorColor: Colors.transparent,
+                    ),
+                  );
+                }),
+              ),
+              SizedBox(height: ThemeConstant.mediumPadding),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: customTheme.buttonGradient,
+                  borderRadius:
+                      BorderRadius.circular(ThemeConstant.largeBorderRadius),
+                ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    print('Verification code: ${verificationCode.join()}');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BlocProvider.value(
+                          value: getIt<RegisterBloc>(),
+                          child: RegisterView(
+                            emailOrPhone: widget.emailOrPhone,
+                            isEmail: widget.isEmail,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    'Confirm',
+                    style: theme.textTheme.labelLarge,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

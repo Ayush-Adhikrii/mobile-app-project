@@ -1,4 +1,3 @@
-// app/themes/app_theme.dart
 import 'package:flutter/material.dart';
 import 'package:softwarica_student_management_bloc/app/constants/theme_constant.dart';
 
@@ -6,7 +5,6 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData getApplicationTheme({required bool isDarkMode}) {
-    // Determine colors based on the theme mode
     final Color primaryColor = isDarkMode ? ThemeConstant.darkPrimaryColor : ThemeConstant.primaryColor;
     final Color secondaryColor = isDarkMode ? ThemeConstant.darkSecondaryColor : ThemeConstant.secondaryColor;
     final Color backgroundColor = isDarkMode ? ThemeConstant.darkBackgroundColor : ThemeConstant.backgroundColor;
@@ -18,7 +16,6 @@ class AppTheme {
     final LinearGradient scaffoldGradient = isDarkMode ? ThemeConstant.darkGradient : ThemeConstant.lightGradient;
 
     return ThemeData(
-      // Color Scheme
       colorScheme: ColorScheme(
         brightness: isDarkMode ? Brightness.dark : Brightness.light,
         primary: primaryColor,
@@ -32,23 +29,13 @@ class AppTheme {
         error: errorColor,
         onError: Colors.white,
       ),
-
-      // Brightness
       brightness: isDarkMode ? Brightness.dark : Brightness.light,
-
-      // Font Family
       fontFamily: 'Montserrat',
-
-      // Use Material 3
       useMaterial3: true,
-
-      // Scaffold Background
-      scaffoldBackgroundColor: Colors.transparent, // Transparent to allow gradient
-
-      // AppBar Theme
+      scaffoldBackgroundColor: Colors.transparent,
       appBarTheme: AppBarTheme(
         elevation: 0,
-        backgroundColor: ThemeConstant.appBarColor, // Transparent for gradient background
+        backgroundColor: ThemeConstant.appBarColor,
         centerTitle: true,
         titleTextStyle: TextStyle(
           color: ThemeConstant.appBarTextColor,
@@ -60,8 +47,6 @@ class AppTheme {
           size: ThemeConstant.mediumIconSize,
         ),
       ),
-
-      // Text Theme
       textTheme: TextTheme(
         displayLarge: TextStyle(
           fontSize: ThemeConstant.headingFontSize,
@@ -84,11 +69,9 @@ class AppTheme {
         labelLarge: TextStyle(
           fontSize: ThemeConstant.buttonFontSize,
           fontWeight: FontWeight.w600,
-          color: Colors.white, // For buttons
+          color: Colors.white,
         ),
       ),
-
-      // Elevated Button Theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
@@ -109,8 +92,6 @@ class AppTheme {
           side: WidgetStateProperty.all(BorderSide.none),
         ),
       ),
-
-      // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceColor,
@@ -147,13 +128,9 @@ class AppTheme {
           horizontal: ThemeConstant.mediumPadding,
         ),
       ),
-
-      // Progress Indicator Theme
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: primaryColor,
       ),
-
-      // Bottom Navigation Bar Theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: primaryColor,
         selectedItemColor: Colors.white,
@@ -169,8 +146,6 @@ class AppTheme {
           fontWeight: FontWeight.normal,
         ),
       ),
-
-      // Card Theme
       cardTheme: CardTheme(
         color: surfaceColor,
         elevation: 0,
@@ -180,8 +155,6 @@ class AppTheme {
         shadowColor: Colors.black12,
         margin: EdgeInsets.all(ThemeConstant.mediumPadding),
       ),
-
-      // SnackBar Theme
       snackBarTheme: SnackBarThemeData(
         backgroundColor: surfaceColor,
         contentTextStyle: TextStyle(
@@ -194,14 +167,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(ThemeConstant.smallBorderRadius),
         ),
       ),
-
-      // Icon Theme
       iconTheme: IconThemeData(
         color: onSurfaceColor,
         size: ThemeConstant.mediumIconSize,
       ),
-
-      // Extensions for custom properties (e.g., gradients)
       extensions: [
         CustomThemeExtension(
           scaffoldGradient: scaffoldGradient,
@@ -213,7 +182,6 @@ class AppTheme {
   }
 }
 
-// Custom Theme Extension for gradients and shadows
 class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
   final LinearGradient scaffoldGradient;
   final LinearGradient buttonGradient;
@@ -244,14 +212,13 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
       return this;
     }
     return CustomThemeExtension(
-      scaffoldGradient: scaffoldGradient, // Gradients don't support lerp, so we keep the same
+      scaffoldGradient: scaffoldGradient,
       buttonGradient: buttonGradient,
       cardShadow: cardShadow,
     );
   }
 }
 
-// Helper to access custom theme extension
-extension CustomThemeExtensionGetter on ThemeData {
-  CustomThemeExtension get custom => extension<CustomThemeExtension>()!;
+extension CustomTheme on ThemeData {
+  CustomThemeExtension get customThemeExtension => extension<CustomThemeExtension>()!;
 }

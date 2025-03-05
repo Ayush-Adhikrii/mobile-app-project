@@ -1,7 +1,8 @@
-// lib/features/preference/presentation/pages/preference_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:softwarica_student_management_bloc/app/constants/theme_constant.dart';
 import 'package:softwarica_student_management_bloc/app/di/di.dart';
+import 'package:softwarica_student_management_bloc/core/theme/app_theme.dart';
 import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/login/login_bloc.dart';
 
 import '../../../domain/entity/preference_entity.dart';
@@ -15,44 +16,69 @@ class PreferencePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userId = context.read<LoginBloc>().state.authUser?.userId ?? '';
+    final theme = Theme.of(context);
+    final customTheme = theme.customThemeExtension;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+
     return BlocProvider(
       create: (_) => getIt<PreferenceBloc>()..add(FetchPreference(userId)),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Filter Matches'),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
+          elevation: 1,
+          shadowColor: theme.colorScheme.onSurface.withOpacity(0.1),
+          toolbarHeight:
+              isTablet ? 40 : 30, // Same height as LikesPage and SwipeScreen
+          leading: Padding(
+            padding: const EdgeInsets.only(left: ThemeConstant.smallPadding),
+            child: Image.asset(
+              'assets/icons/plain_logo.png', // Leftmost logo in AppBar
+              height: isTablet ? 30 : 20,
+              width: isTablet ? 30 : 20,
+              fit: BoxFit.contain,
+            ),
+          ),
+          leadingWidth: isTablet ? 40 : 30,
+          title: Center(
+            child: Image.asset(
+              'assets/icons/text_logo.png', // Centered logo
+              height: isTablet ? 30 : 20,
+              fit: BoxFit.contain,
+            ),
           ),
         ),
         body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFFCE4EC), Color(0xFFE1BEE7)],
-            ),
+          decoration: BoxDecoration(
+            gradient: customTheme.scaffoldGradient,
           ),
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.only(
+            top: ThemeConstant.mediumPadding, // Space for AppBar
+            left: isTablet
+                ? ThemeConstant.largePadding
+                : ThemeConstant.mediumPadding,
+            right: isTablet
+                ? ThemeConstant.largePadding
+                : ThemeConstant.mediumPadding,
+            bottom: isTablet
+                ? ThemeConstant.largePadding
+                : ThemeConstant.mediumPadding,
+          ),
           child: Card(
-            elevation: 4,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(ThemeConstant.mediumBorderRadius),
+            ),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(ThemeConstant.mediumPadding),
               child: Column(
                 children: [
-                  // Pink Logo at the top
                   Image.asset(
                     'assets/icons/pink_logo.jpg',
-                    height: 150, 
-                    width: 150,
+                    height: isTablet ? 200 : 150,
+                    width: isTablet ? 200 : 150,
                   ),
-                  const SizedBox(height: 16),
-                  // Content inside the card
-                  const Expanded(child: PreferenceContent()),
+                  SizedBox(height: ThemeConstant.mediumPadding),
+                  Expanded(child: PreferenceContent()),
                 ],
               ),
             ),
@@ -68,16 +94,24 @@ class PreferenceContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlocBuilder<PreferenceBloc, PreferenceState>(
       builder: (context, state) {
         if (state is PreferenceLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+              child:
+                  CircularProgressIndicator(color: theme.colorScheme.primary));
         } else if (state is PreferenceLoaded) {
           return FilterList(preference: state.preference);
         } else if (state is PreferenceError) {
-          return Center(child: Text('Error: ${state.message}'));
+          return Center(
+              child: Text('Error: ${state.message}',
+                  style: theme.textTheme.bodyLarge));
         }
-        return const Center(child: Text('Loading preferences...'));
+        return Center(
+            child: Text('Loading preferences...',
+                style: theme.textTheme.bodyLarge));
       },
     );
   }
@@ -90,6 +124,7 @@ class FilterList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final fields = [
       {
         'key': 'preferredGender',
@@ -121,25 +156,28 @@ class FilterList extends StatelessWidget {
         final value = _getValue(preference, key);
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: EdgeInsets.symmetric(vertical: ThemeConstant.smallPadding),
           child: Card(
-            elevation: 4,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(ThemeConstant.mediumBorderRadius),
+            ),
+            elevation: 2, // Added elevation for visual distinction
             child: ListTile(
-              leading: Icon(icon, color: Colors.pinkAccent),
+              leading: Icon(icon, color: theme.colorScheme.primary),
               title: Text(label,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w600)),
+                  style: theme.textTheme.bodyLarge
+                      ?.copyWith(fontWeight: FontWeight.w600)),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     value ?? 'Add',
-                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.7)),
                   ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.chevron_right, color: Colors.pinkAccent),
+                  SizedBox(width: ThemeConstant.smallPadding),
+                  Icon(Icons.chevron_right, color: theme.colorScheme.primary),
                 ],
               ),
               onTap: () => _showEditDialog(context, key, label, value),
@@ -268,7 +306,7 @@ class _EditPreferenceDialogState extends State<EditPreferenceDialog> {
   List<String> _getFieldOptions(String key) {
     switch (key.toLowerCase()) {
       case 'preferredgender':
-        return ['Male', 'Female', 'Others', 'Any'];
+        return ['Male', 'Female', 'Other', 'Any'];
       case 'relationtype':
         return [
           'Long term',
@@ -311,6 +349,11 @@ class _EditPreferenceDialogState extends State<EditPreferenceDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final customTheme = theme.customThemeExtension;
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
     final question = _getFieldQuestion(widget.title);
     final options = _getFieldOptions(widget.keyField);
     final isAgeField = widget.keyField.toLowerCase().contains('age');
@@ -319,41 +362,42 @@ class _EditPreferenceDialogState extends State<EditPreferenceDialog> {
     final sliderMax = 60;
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.circular(ThemeConstant.mediumBorderRadius)),
       child: Card(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(ThemeConstant.mediumBorderRadius)),
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(ThemeConstant.mediumPadding),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     question,
-                    style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
+                    style: theme.textTheme.displayMedium,
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
-                  Card(
-                    color: Colors.pink[300],
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    child: SizedBox(
-                      height: 100,
-                      child: Center(
-                        child: Icon(
-                          _getIcon(widget.keyField),
-                          size: 50,
-                          color: Colors.white,
-                        ),
+                  SizedBox(height: ThemeConstant.mediumPadding),
+                  Container(
+                    height: isTablet ? 120 : 100,
+                    decoration: BoxDecoration(
+                      gradient: customTheme.buttonGradient,
+                      borderRadius: BorderRadius.circular(
+                          ThemeConstant.mediumBorderRadius),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        _getIcon(widget.keyField),
+                        size: isTablet ? 60 : 50,
+                        color: theme.colorScheme.onPrimary,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: ThemeConstant.mediumPadding),
                   if (isAgeField)
                     Column(
                       children: [
@@ -363,14 +407,13 @@ class _EditPreferenceDialogState extends State<EditPreferenceDialog> {
                           max: sliderMax.toDouble(),
                           divisions: (sliderMax - sliderMin).toInt(),
                           label: selectedValue,
-                          activeColor: Colors.pink[600],
+                          activeColor: theme.colorScheme.primary,
                           onChanged: (value) => setState(
                               () => selectedValue = value.round().toString()),
                         ),
                         Text(
                           '$selectedValue years',
-                          style: const TextStyle(
-                              fontSize: 16, color: Colors.black),
+                          style: theme.textTheme.bodyLarge,
                         ),
                       ],
                     )
@@ -381,10 +424,10 @@ class _EditPreferenceDialogState extends State<EditPreferenceDialog> {
                           children: options.map((option) {
                             return RadioListTile<String>(
                               title: Text(option,
-                                  style: const TextStyle(color: Colors.black)),
+                                  style: theme.textTheme.bodyLarge),
                               value: option,
                               groupValue: selectedValue,
-                              activeColor: Colors.pink[600],
+                              activeColor: theme.colorScheme.primary,
                               onChanged: (value) =>
                                   setState(() => selectedValue = value!),
                             );
@@ -392,35 +435,32 @@ class _EditPreferenceDialogState extends State<EditPreferenceDialog> {
                         ),
                       ),
                     ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      widget.onSave(selectedValue);
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink[600],
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 24),
+                  SizedBox(height: ThemeConstant.mediumPadding),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: customTheme.buttonGradient,
+                      borderRadius: BorderRadius.circular(
+                          ThemeConstant.largeBorderRadius),
                     ),
-                    child: const Text(
-                      'Confirm',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        widget.onSave(selectedValue);
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        'Confirm',
+                        style: theme.textTheme.labelLarge,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
             Positioned(
-              top: 8,
-              right: 8,
+              top: ThemeConstant.smallPadding,
+              right: ThemeConstant.smallPadding,
               child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.red),
+                icon: Icon(Icons.close, color: ThemeConstant.errorColor),
                 onPressed: () => Navigator.pop(context),
               ),
             ),

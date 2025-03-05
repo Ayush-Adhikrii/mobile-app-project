@@ -1,10 +1,11 @@
-// lib/features/auth/presentation/view/login_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:softwarica_student_management_bloc/app/constants/theme_constant.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view/register_with_email_view.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view/register_with_number.dart';
-import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/login/login_bloc.dart';
+import 'package:softwarica_student_management_bloc/core/theme/app_theme.dart';
+
+import '../../../../app/constants/theme_constant.dart';
+import '../view_model/login/login_bloc.dart';
+import 'register_with_email_view.dart';
+import 'register_with_number.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -46,237 +47,255 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    print('LoginView build called');
+    final theme = Theme.of(context);
+    final customTheme = theme.customThemeExtension;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF5F7),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Spacer(flex: 2),
-            Image.asset(
-              'assets/icons/pink_logo.jpg',
-              height: 150,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "Sign in to continue",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text('Sign In'),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: customTheme.scaffoldGradient,
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(isTablet
+              ? ThemeConstant.largePadding
+              : ThemeConstant.mediumPadding),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(flex: 2),
+              Image.asset(
+                'assets/icons/pink_logo.jpg',
+                height: isTablet ? 200 : 150,
+                fit: BoxFit.contain,
               ),
-            ),
-            const Text(
-              "Please log in to continue",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
+              SizedBox(height: ThemeConstant.largePadding),
+              Text(
+                "Sign in to continue",
+                style: theme.textTheme.displayMedium,
               ),
-            ),
-            const SizedBox(height: 15),
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _usernameController,
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                      labelStyle:
-                          const TextStyle(color: ThemeConstant.primaryColor),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide:
-                            const BorderSide(color: ThemeConstant.primaryColor),
+              Text(
+                "Please log in to continue",
+                style: theme.textTheme.bodyMedium,
+              ),
+              SizedBox(height: ThemeConstant.mediumPadding),
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _usernameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Username',
+                        prefixIcon: Icon(Icons.person),
                       ),
-                      prefixIcon: const Icon(Icons.person,
-                          color: ThemeConstant.primaryColor),
+                      validator: _validateUsername,
+                      style: TextStyle(color: theme.colorScheme.onSurface),
                     ),
-                    validator: _validateUsername,
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      labelStyle:
-                          const TextStyle(color: ThemeConstant.primaryColor),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide:
-                            const BorderSide(color: ThemeConstant.primaryColor),
+                    SizedBox(height: ThemeConstant.smallPadding),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: Icon(Icons.lock),
                       ),
-                      prefixIcon: const Icon(Icons.lock,
-                          color: ThemeConstant.primaryColor),
+                      validator: _validatePassword,
+                      style: TextStyle(color: theme.colorScheme.onSurface),
                     ),
-                    validator: _validatePassword,
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ThemeConstant.primaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                    SizedBox(height: ThemeConstant.mediumPadding),
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: customTheme.buttonGradient,
+                        borderRadius: BorderRadius.circular(
+                            ThemeConstant.largeBorderRadius),
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            final bloc = context.read<LoginBloc>();
+                            if (!bloc.isClosed) {
+                              bloc.add(LoginUserEvent(
+                                context: context,
+                                userName: _usernameController.text,
+                                password: _passwordController.text,
+                              ));
+                            } else {
+                              debugPrint('LoginBloc is closed, cannot login');
+                            }
+                          }
+                        },
+                        child: Text(
+                          'Sign In',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.labelLarge,
                         ),
                       ),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          final bloc = context.read<LoginBloc>();
-                          if (!bloc.isClosed) {
-                            bloc.add(LoginUserEvent(
-                              context: context,
-                              userName: _usernameController.text,
-                              password: _passwordController.text,
-                            ));
-                          } else {
-                            debugPrint('LoginBloc is closed, cannot login');
-                          }
-                        }
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: ThemeConstant.mediumPadding),
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      thickness: 1,
+                      color: theme.colorScheme.onSurface.withOpacity(0.3),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: ThemeConstant.smallPadding),
+                    child: Text(
+                      "Or sign in with",
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      thickness: 1,
+                      color: theme.colorScheme.onSurface.withOpacity(0.3),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: ThemeConstant.largePadding),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Flexible(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const RegisterWithEmailView()),
+                        );
                       },
-                      child: const Text(
-                        'Sign In',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: ThemeConstant.smallPadding,
+                          horizontal: ThemeConstant.mediumPadding,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          border: Border.all(
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(
+                              ThemeConstant.largeBorderRadius),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.email,
+                              color: theme.colorScheme.primary,
+                              size: isTablet
+                                  ? ThemeConstant.mediumIconSize
+                                  : ThemeConstant.smallIconSize,
+                            ),
+                            SizedBox(width: ThemeConstant.smallPadding),
+                            Text(
+                              "Email",
+                              style: theme.textTheme.bodyLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: ThemeConstant.mediumPadding),
+                  Flexible(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const RegisterWithNumber()),
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: ThemeConstant.smallPadding,
+                          horizontal: ThemeConstant.mediumPadding,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          border: Border.all(
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(
+                              ThemeConstant.largeBorderRadius),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.phone,
+                              color: theme.colorScheme.primary,
+                              size: isTablet
+                                  ? ThemeConstant.mediumIconSize
+                                  : ThemeConstant.smallIconSize,
+                            ),
+                            SizedBox(width: ThemeConstant.smallPadding),
+                            Text(
+                              "Phone",
+                              style: theme.textTheme.bodyLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: Divider(
-                    thickness: 1,
-                    color: Colors.grey.shade400,
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(
-                    "Or sign in with",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-                Expanded(
-                  child: Divider(
-                    thickness: 1,
-                    color: Colors.grey.shade400,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Flexible(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const RegisterWithEmailView()),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(30),
+              SizedBox(height: ThemeConstant.largePadding),
+              TextButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('Trouble Signing In?',
+                          style: theme.textTheme.displayMedium),
+                      content: Text(
+                        'Please contact support or try resetting your password.',
+                        style: theme.textTheme.bodyLarge,
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.email, color: ThemeConstant.primaryColor),
-                          SizedBox(width: 8),
-                          Text(
-                            "Email",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(
+                            'OK',
+                            style: theme.textTheme.bodyLarge
+                                ?.copyWith(color: theme.colorScheme.primary),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+                  );
+                },
+                child: Text(
+                  'Trouble signing in?',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Flexible(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const RegisterWithNumber()),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.phone, color: ThemeConstant.primaryColor),
-                          SizedBox(width: 8),
-                          Text(
-                            "Phone Number",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
-            TextButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Trouble Signing In?'),
-                    content: const Text(
-                        'Please contact support or try resetting your password.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('OK'),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              child: const Text(
-                'Trouble signing in?',
-                style: TextStyle(
-                  color: ThemeConstant.primaryColor,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
-            const Spacer(flex: 2),
-          ],
+              const Spacer(flex: 2),
+            ],
+          ),
         ),
       ),
     );

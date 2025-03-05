@@ -35,3 +35,13 @@ class UserError extends UserState {
 
   const UserError(this.message, {this.users});
 }
+
+class UserMatchFound extends UserState {
+  final List<UserEntity> users;
+  final String? swipeFeedback;
+
+  const UserMatchFound({required this.users, this.swipeFeedback});
+
+  @override
+  List<Object?> get props => [users, swipeFeedback];
+}
