@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:softwarica_student_management_bloc/app/di/di.dart';
+import 'package:softwarica_student_management_bloc/features/home/presentation/view/swipe_screen.dart';
 
 import '../../../../app/constants/api_endpoints.dart';
 import '../view_model/bloc/message_bloc.dart';
@@ -23,7 +24,7 @@ class MatchesPage extends StatelessWidget {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => SwipeScreen(),
           ),
         ),
         body: Container(

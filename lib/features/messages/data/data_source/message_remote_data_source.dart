@@ -1,4 +1,3 @@
-// lib/features/message/data/datasources/message_remote_datasource.dart
 import 'package:dio/dio.dart';
 import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 import 'package:softwarica_student_management_bloc/app/constants/api_endpoints.dart';
@@ -21,7 +20,7 @@ class MessageRemoteDataSourceImpl implements MessageRemoteDataSource {
   late socket_io.Socket _socket;
   final String userId;
   final String socketUrl =
-      'http://${ApiEndpoints.ipAddress}:5000'; // Updated to match your API IP
+      'http://${ApiEndpoints.ipAddress}:5000'; 
 
   MessageRemoteDataSourceImpl(this._dio, this.userId) {
     _initializeSocket();
