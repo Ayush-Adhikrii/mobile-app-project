@@ -1,8 +1,8 @@
-// lib/features/auth/presentation/view_model/login/login_bloc.dart
 import 'package:dio/dio.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/login/login_event.dart';
 
 import '../../../../../app/constants/api_endpoints.dart';
 import '../../../../../app/di/di.dart';
@@ -10,13 +10,10 @@ import '../../../../../app/shared_prefs/token_shared_prefs.dart';
 import '../../../../../core/common/snackbar/my_snackbar.dart';
 import '../../../../home/presentation/view/home_view.dart';
 import '../../../../home/presentation/view_model/home_cubit.dart';
-import '../../../domain/entity/auth_entity.dart';
 import '../../../domain/use_case/get_current_user_use_case.dart';
 import '../../../domain/use_case/login_usecase.dart';
 import '../signup/register_bloc.dart';
-
-part 'login_event.dart';
-part 'login_state.dart';
+import 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final RegisterBloc _registerBloc;
@@ -64,23 +61,34 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     });
 
     on<LoginUserEvent>((event, emit) async {
-      emit(state.copyWith(isLoading: true));
+      emit(state.copyWith(
+          isLoading: true, errorMessage: null, isOffline: false));
       final result = await _loginUseCase(
         LoginParams(userName: event.userName, password: event.password),
       );
       await result.fold(
         (failure) async {
           print('Login failed: ${failure.message}');
-          emit(state.copyWith(isLoading: false, isSuccess: false));
+          emit(state.copyWith(
+            isLoading: false,
+            isSuccess: false,
+            errorMessage: failure.message,
+            isOffline:
+                failure.message.contains('Failed to login from local storage'),
+          ));
           showMySnackBar(
             context: event.context,
-            message: "Invalid Credentials",
+            message:
+                failure.message.contains('Failed to login from local storage')
+                    ? "Offline: Invalid credentials in local storage"
+                    : "Invalid Credentials",
             color: Colors.red,
           );
         },
         (token) async {
           print('Login succeeded, token: $token');
           emit(state.copyWith(isLoading: false, isSuccess: true));
+          // Fetch the user only if explicitly needed
           final userResult = await _getCurrentUserUseCase();
           await userResult.fold(
             (failure) async {
@@ -101,17 +109,29 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
               ));
             },
           );
+
+          add(NavigateHomeScreenEvent(
+            context: event.context,
+            destination: const HomeView(),
+          ));
         },
       );
     });
 
     on<FetchCurrentUserEvent>((event, emit) async {
-      emit(state.copyWith(isLoading: true));
+      emit(state.copyWith(
+          isLoading: true, errorMessage: null, isOffline: false));
       final result = await _getCurrentUserUseCase();
       result.fold(
         (failure) {
           print('FetchCurrentUser failed: ${failure.message}');
-          emit(state.copyWith(isLoading: false, isSuccess: false));
+          emit(state.copyWith(
+            isLoading: false,
+            isSuccess: false,
+            errorMessage: failure.message,
+            isOffline:
+                failure.message.contains('User not found in local storage'),
+          ));
           showMySnackBar(
             context: event.context,
             message: "Failed to fetch user: ${failure.message}",
@@ -126,15 +146,24 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     });
 
     on<LogoutUserEvent>((event, emit) async {
-      emit(state.copyWith(isLoading: true));
+      emit(state.copyWith(
+          isLoading: true, errorMessage: null, isOffline: false));
       try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('token'); // Clear the token
         await getIt<TokenSharedPrefs>().clearToken();
         print('Logout succeeded, token cleared');
         emit(LoginState.initial());
         Navigator.pushReplacementNamed(event.context, '/login');
+        showMySnackBar(
+          context: event.context,
+          message: "Logout successful",
+          color: Colors.green,
+        );
       } catch (e) {
         print('Logout failed: $e');
-        emit(state.copyWith(isLoading: false, isSuccess: false));
+        emit(state.copyWith(
+            isLoading: false, isSuccess: false, errorMessage: e.toString()));
         showMySnackBar(
           context: event.context,
           message: "Logout failed: $e",
@@ -144,13 +173,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     });
 
     on<ChangePasswordEvent>((event, emit) async {
-      emit(state.copyWith(isLoading: true));
+      emit(state.copyWith(
+          isLoading: true, errorMessage: null, isOffline: false));
       try {
         final response = await getIt<Dio>().put(
           '${ApiEndpoints.baseUrl}/user/password',
           data: {
             'oldPassword': event.oldPassword,
-            'newPassword': event.newPassword
+            'newPassword': event.newPassword,
           },
         );
         if (response.statusCode == 200) {
@@ -166,10 +196,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         }
       } catch (e) {
         print('Password change failed: $e');
-        emit(state.copyWith(isLoading: false, isSuccess: false));
+        emit(state.copyWith(
+          isLoading: false,
+          isSuccess: false,
+          errorMessage: e.toString(),
+          isOffline: e.toString().contains('No internet connection'),
+        ));
         showMySnackBar(
           context: event.context,
-          message: "Password change failed: $e",
+          message: e.toString().contains('No internet connection')
+              ? "Offline: Cannot change password without internet"
+              : "Password change failed: $e",
           color: Colors.red,
         );
       }

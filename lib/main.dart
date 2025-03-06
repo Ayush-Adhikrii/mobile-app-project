@@ -5,7 +5,7 @@ import 'package:softwarica_student_management_bloc/core/network/hive_service.dar
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await HiveService.init();
+  await HiveService().init();
 
   await HiveService().clearUserBox();
 

@@ -1,9 +1,9 @@
 import 'dart:io';
-
-import '../../../../../core/network/hive_service.dart';
-import '../../../domain/entity/auth_entity.dart';
-import '../../model/auth_hive_model.dart';
-import '../auth_data_source.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:softwarica_student_management_bloc/core/network/hive_service.dart';
+import 'package:softwarica_student_management_bloc/features/auth/data/model/auth_hive_model.dart';
+import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
+import 'package:softwarica_student_management_bloc/features/auth/data/data_source/auth_data_source.dart';
 
 class AuthLocalDataSource implements IAuthDataSource {
   final HiveService _hiveService;
@@ -11,47 +11,48 @@ class AuthLocalDataSource implements IAuthDataSource {
   AuthLocalDataSource(this._hiveService);
 
   @override
-  Future<AuthEntity> getCurrentUser() {
-    return Future.value(AuthEntity(
-      userId: "",
-      name: "",
-      email: null,
-      phoneNumber: "",
-      userName: "",
-      password: "",
-      gender: null,
-      birthDate: null,
-      starSign: null,
-      bio: null,
-      profilePhoto: "",
-    ));
-  }
-
-  @override
-  Future<String> loginUser(String userName, String password) async {
+  Future<AuthEntity> getCurrentUser() async {
     try {
-      await _hiveService.login(userName, password);
-      return Future.value("Success");
+      final userModel = await _hiveService.getData();
+      if (userModel == null) {
+        throw Exception('User not found in local storage');
+      }
+      return userModel.toEntity();
     } catch (e) {
-      return Future.error(e);
+      throw Exception('Failed to get current user from local storage: $e');
     }
   }
 
   @override
-  Future<void> registerUser(AuthEntity user) async {
+  Future<(String, AuthEntity)> loginUser(String userName, String password) async {
+    try {
+      final userModel = await _hiveService.login(userName, password);
+      // Store the userId in SharedPreferences to track the current user
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('current_user_id', userModel!.userId!);
+      // Since we're offline, we don't have a token; return an empty token
+      return ('', userModel.toEntity());
+    } catch (e) {
+      throw Exception('Failed to login from local storage: $e');
+    }
+  }
+
+  @override
+  Future<AuthEntity> registerUser(AuthEntity user) async {
     try {
       final authHiveModel = AuthHiveModel.fromEntity(user);
-      print(user);
-
       await _hiveService.register(authHiveModel);
-      return Future.value();
+      // Store the userId in SharedPreferences to track the current user
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('current_user_id', authHiveModel.userId!);
+      return authHiveModel.toEntity();
     } catch (e) {
-      return Future.error(e);
+      throw Exception('Failed to register user in local storage: $e');
     }
   }
 
   @override
   Future<String> uploadProfilePicture(File file) {
-    throw UnimplementedError();
+    throw Exception('Profile picture upload not supported offline');
   }
 }

@@ -1,15 +1,11 @@
-import 'dart:io';
-
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:softwarica_student_management_bloc/core/common/snackbar/my_snackbar.dart';
+import 'package:softwarica_student_management_bloc/features/auth/domain/use_case/register_user_usecase.dart';
+import 'package:softwarica_student_management_bloc/features/auth/domain/use_case/upload_image_usecase.dart';
 
-import '../../../../../core/common/snackbar/my_snackbar.dart';
-import '../../../domain/use_case/register_user_usecase.dart';
-import '../../../domain/use_case/upload_image_usecase.dart';
-
-part 'register_event.dart';
-part 'register_state.dart';
+import 'register_event.dart';
+import 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   final RegisterUseCase _registerUseCase;
@@ -30,8 +26,8 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     RegisterUser event,
     Emitter<RegisterState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true));
-    print("passwordd ${event.password}");
+    emit(state.copyWith(isLoading: true, errorMessage: null, isOffline: false));
+    print("password ${event.password}");
 
     final result = await _registerUseCase.call(RegisterUserParams(
       name: event.name,
@@ -47,12 +43,34 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     ));
 
     result.fold(
-      (l) => emit(state.copyWith(isLoading: false, isSuccess: false)),
-      (r) {
+      (failure) {
+        print('Register failed: ${failure.message}');
+        emit(state.copyWith(
+          isLoading: false,
+          isSuccess: false,
+          errorMessage: failure.message,
+          isOffline: failure.message
+              .contains('Failed to register user in local storage'),
+        ));
+        showMySnackBar(
+          context: event.context,
+          message: failure.message
+                  .contains('Failed to register user in local storage')
+              ? "Registered locally. Will sync when online."
+              : "Registration failed: ${failure.message}",
+          color: failure.message
+                  .contains('Failed to register user in local storage')
+              ? Colors.orange
+              : Colors.red,
+        );
+      },
+      (_) {
+        print('Register succeeded');
         emit(state.copyWith(isLoading: false, isSuccess: true));
         showMySnackBar(
           context: event.context,
           message: "Registration Successful",
+          color: Colors.green,
         );
       },
     );
@@ -63,7 +81,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     UploadImage event,
     Emitter<RegisterState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, errorMessage: null, isOffline: false));
     final result = await _uploadImageUsecase.call(
       UploadImageParams(
         file: event.file,
@@ -71,15 +89,34 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     );
 
     result.fold(
-      (l) => emit(state.copyWith(isLoading: false, isSuccess: false)),
-      (r) {
-        // 'r' should be the filename extracted from your API response
+      (failure) {
+        print('Upload image failed: ${failure.message}');
+        emit(state.copyWith(
+          isLoading: false,
+          isSuccess: false,
+          errorMessage: failure.message,
+          isOffline: failure.message.contains('No internet connection'),
+        ));
+        showMySnackBar(
+          context: event.context,
+          message: failure.message.contains('No internet connection')
+              ? "Offline: Cannot upload image without internet"
+              : "Image upload failed: ${failure.message}",
+          color: Colors.red,
+        );
+      },
+      (imageName) {
+        print('Upload image succeeded, imageName: $imageName');
         emit(state.copyWith(
           isLoading: false,
           isSuccess: true,
-          imageName: r, // Save the filename in the state
+          imageName: imageName,
         ));
-        print("Extracted filename: $r");
+        showMySnackBar(
+          context: event.context,
+          message: "Image uploaded successfully",
+          color: Colors.green,
+        );
       },
     );
   }

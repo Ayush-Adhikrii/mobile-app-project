@@ -22,6 +22,7 @@ class UpdateProfileParams extends Equatable {
   final String gender;
   final String email;
   final DateTime birthDate;
+  final String starSign;
   final String phoneNumber;
   final String bio;
   final String userName;
@@ -32,6 +33,7 @@ class UpdateProfileParams extends Equatable {
     required this.gender,
     required this.email,
     required this.birthDate,
+    required this.starSign,
     required this.phoneNumber,
     required this.bio,
     required this.userName,
@@ -42,11 +44,22 @@ class UpdateProfileParams extends Equatable {
         'gender': gender,
         'email': email,
         'birthDate': birthDate.toIso8601String(),
+        'starSign': starSign,
         'phoneNumber': phoneNumber,
         'bio': bio,
         'userName': userName,
       };
 
   @override
-  List<Object> get props => [userId, name, gender, email, birthDate, phoneNumber, bio, userName];
+  List<Object> get props => [
+        userId,
+        name,
+        gender,
+        email,
+        birthDate,
+        starSign,
+        phoneNumber,
+        bio,
+        userName
+      ];
 }

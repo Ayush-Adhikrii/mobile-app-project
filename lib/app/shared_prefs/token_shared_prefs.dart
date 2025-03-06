@@ -7,37 +7,44 @@ class TokenSharedPrefs {
 
   TokenSharedPrefs(this._sharedPreferences);
 
+  Future<Either<Failure, String>> getToken() async {
+    try {
+      final token = _sharedPreferences.getString('token') ?? '';
+      return Right(token);
+    } catch (e) {
+      return Left(TokenFailure(message: e.toString()));
+    }
+  }
+
   Future<Either<Failure, void>> saveToken(String token) async {
     try {
-      print('Saving token: $token'); // Debug
       await _sharedPreferences.setString('token', token);
-      print('Token saved successfully'); // Debug
-      return Right(null);
+      return const Right(null);
     } catch (e) {
-      print('Save token error: $e'); // Debug
-      return Left(SharedPrefsFailure(message: e.toString()));
+      return Left(TokenFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, void>> saveUserId(String userId) async {
+    try {
+      await _sharedPreferences.setString('current_user_id', userId);
+      return const Right(null);
+    } catch (e) {
+      return Left(TokenFailure(message: e.toString()));
     }
   }
 
   Future<Either<Failure, void>> clearToken() async {
     try {
-      await _sharedPreferences.setString('token', "");
-      print('Token saved successfully'); // Debug
-      return Right(null);
+      await _sharedPreferences.remove('token');
+      await _sharedPreferences.remove('current_user_id');
+      return const Right(null);
     } catch (e) {
-      print('Save token error: $e'); // Debug
-      return Left(SharedPrefsFailure(message: e.toString()));
+      return Left(TokenFailure(message: e.toString()));
     }
   }
+}
 
-  Future<Either<Failure, String>> getToken() async {
-    try {
-      final token = _sharedPreferences.getString('token');
-      print('Retrieved token: $token'); // Debug
-      return Right(token ?? '');
-    } catch (e) {
-      print('Get token error: $e'); // Debug
-      return Left(SharedPrefsFailure(message: e.toString()));
-    }
-  }
+class TokenFailure extends Failure {
+  TokenFailure({required String message}) : super(message: message);
 }

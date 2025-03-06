@@ -22,6 +22,8 @@ import 'package:softwarica_student_management_bloc/features/user_details/present
 import 'package:softwarica_student_management_bloc/features/user_details/presentation/view_model/bloc/user_details_event.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/presentation/view_model/bloc/user_details_state.dart';
 
+import '../../../auth/presentation/view_model/login/login_event.dart';
+import '../../../auth/presentation/view_model/login/login_state.dart';
 import 'widgets/edit_field_modal.dart';
 
 class ProfilePage extends StatefulWidget {

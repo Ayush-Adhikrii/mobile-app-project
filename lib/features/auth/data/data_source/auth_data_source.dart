@@ -1,13 +1,9 @@
 import 'dart:io';
+import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
 
-import '../../domain/entity/auth_entity.dart';
-
-abstract interface class IAuthDataSource {
-  Future<String> loginUser(String userName, String password);
-
-  Future<void> registerUser(AuthEntity student);
-
-  Future<AuthEntity> getCurrentUser();
-
+abstract class IAuthDataSource {
+  Future<(String, AuthEntity)> loginUser(String userName, String password);
+  Future<AuthEntity> registerUser(AuthEntity user);
   Future<String> uploadProfilePicture(File file);
+  Future<AuthEntity> getCurrentUser();
 }

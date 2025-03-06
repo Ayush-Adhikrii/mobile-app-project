@@ -1,45 +1,42 @@
-// lib/features/auth/presentation/bloc/edit_profile_event.dart
 import 'dart:io';
-import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 
-abstract class EditProfileEvent extends Equatable {
-  const EditProfileEvent();
-
-  @override
-  List<Object?> get props => [];
-}
+class EditProfileEvent {}
 
 class UpdateProfile extends EditProfileEvent {
+  final BuildContext context;
   final String userId;
-  final String name;
-  final String gender;
-  final String email;
-  final DateTime birthDate;
-  final String phoneNumber;
-  final String bio;
-  final String userName;
+  final String? name;
+  final String? gender;
+  final String? email;
+  final DateTime? birthDate;
+  final String? starSign;
+  final String? phoneNumber;
+  final String? bio;
+  final String? userName;
 
-  const UpdateProfile({
+  UpdateProfile({
+    required this.context,
     required this.userId,
-    required this.name,
-    required this.gender,
-    required this.email,
-    required this.birthDate,
-    required this.phoneNumber,
-    required this.bio,
-    required this.userName,
+    this.name,
+    this.gender,
+    this.email,
+    this.birthDate,
+    this.starSign,
+    this.phoneNumber,
+    this.bio,
+    this.userName,
   });
-
-  @override
-  List<Object?> get props => [userId, name, gender, email, birthDate, phoneNumber, bio, userName];
 }
 
 class UploadProfilePhoto extends EditProfileEvent {
+  final BuildContext context;
   final String userId;
   final File image;
 
-  const UploadProfilePhoto({required this.userId, required this.image});
-
-  @override
-  List<Object?> get props => [userId, image];
+  UploadProfilePhoto({
+    required this.context,
+    required this.userId,
+    required this.image,
+  });
 }

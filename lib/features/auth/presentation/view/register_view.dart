@@ -7,12 +7,13 @@ import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:softwarica_student_management_bloc/core/theme/app_theme.dart';
 
+import '../../../../app/constants/theme_constant.dart';
 import '../../../../app/di/di.dart';
 import '../../../../core/common/snackbar/my_snackbar.dart';
 import '../../../splash/presentation/view_model/splash_cubit.dart';
 import '../view_model/signup/register_bloc.dart';
+import '../view_model/signup/register_event.dart';
 import 'login_view.dart';
-import '../../../../app/constants/theme_constant.dart';
 
 class RegisterView extends StatefulWidget {
   final String emailOrPhone;
@@ -31,12 +32,14 @@ class RegisterView extends StatefulWidget {
 class _RegisterViewState extends State<RegisterView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailOrPhoneController = TextEditingController();
-  final TextEditingController _emailOrPhoneController2 = TextEditingController();
+  final TextEditingController _emailOrPhoneController2 =
+      TextEditingController();
   final TextEditingController _starSignController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   DateTime? _birthDate;
   String? _gender;
   bool _isPasswordVisible = false;
@@ -51,7 +54,8 @@ class _RegisterViewState extends State<RegisterView> {
   }
 
   Future<void> checkCameraPermission() async {
-    if (await Permission.camera.request().isRestricted || await Permission.camera.request().isDenied) {
+    if (await Permission.camera.request().isRestricted ||
+        await Permission.camera.request().isDenied) {
       await Permission.camera.request();
     }
   }
@@ -64,7 +68,9 @@ class _RegisterViewState extends State<RegisterView> {
         setState(() {
           _profileImage = File(image.path);
           print("Picked image: ${_profileImage?.path}");
-          context.read<RegisterBloc>().add(UploadImage(file: _profileImage!));
+          context
+              .read<RegisterBloc>()
+              .add(UploadImage(context, _profileImage!));
         });
       } else {
         return;
@@ -85,10 +91,14 @@ class _RegisterViewState extends State<RegisterView> {
     if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return 'Leo';
     if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return 'Virgo';
     if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) return 'Libra';
-    if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) return 'Scorpio';
-    if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return 'Sagittarius';
-    if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return 'Capricorn';
-    if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return 'Aquarius';
+    if ((month == 10 && day >= 23) || (month == 11 && day <= 21))
+      return 'Scorpio';
+    if ((month == 11 && day >= 22) || (month == 12 && day <= 21))
+      return 'Sagittarius';
+    if ((month == 12 && day >= 22) || (month == 1 && day <= 19))
+      return 'Capricorn';
+    if ((month == 1 && day >= 20) || (month == 2 && day <= 18))
+      return 'Aquarius';
     if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) return 'Pisces';
     return '';
   }
@@ -110,7 +120,9 @@ class _RegisterViewState extends State<RegisterView> {
           gradient: customTheme.scaffoldGradient,
         ),
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(isTablet ? ThemeConstant.largePadding : ThemeConstant.mediumPadding),
+          padding: EdgeInsets.all(isTablet
+              ? ThemeConstant.largePadding
+              : ThemeConstant.mediumPadding),
           child: Form(
             key: _formKey,
             child: Column(
@@ -125,7 +137,8 @@ class _RegisterViewState extends State<RegisterView> {
                         isScrollControlled: true,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(ThemeConstant.mediumBorderRadius),
+                            top: Radius.circular(
+                                ThemeConstant.mediumBorderRadius),
                           ),
                         ),
                         builder: (context) => Padding(
@@ -141,11 +154,14 @@ class _RegisterViewState extends State<RegisterView> {
                                 },
                                 icon: Icon(
                                   Icons.camera,
-                                  size: isTablet ? ThemeConstant.mediumIconSize : ThemeConstant.smallIconSize,
+                                  size: isTablet
+                                      ? ThemeConstant.mediumIconSize
+                                      : ThemeConstant.smallIconSize,
                                 ),
                                 label: Text(
                                   'Camera',
-                                  style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary),
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                      color: theme.colorScheme.onPrimary),
                                 ),
                               ),
                               ElevatedButton.icon(
@@ -155,11 +171,14 @@ class _RegisterViewState extends State<RegisterView> {
                                 },
                                 icon: Icon(
                                   Icons.image,
-                                  size: isTablet ? ThemeConstant.mediumIconSize : ThemeConstant.smallIconSize,
+                                  size: isTablet
+                                      ? ThemeConstant.mediumIconSize
+                                      : ThemeConstant.smallIconSize,
                                 ),
                                 label: Text(
                                   'Gallery',
-                                  style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary),
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                      color: theme.colorScheme.onPrimary),
                                 ),
                               ),
                             ],
@@ -175,10 +194,14 @@ class _RegisterViewState extends State<RegisterView> {
                         backgroundImage: _profileImage != null
                             ? FileImage(_profileImage!)
                             : (_gender == 'Female'
-                                ? const AssetImage('assets/images/default_female.png')
-                                : _gender == 'Other'
-                                    ? const AssetImage('assets/images/default_profile.png')
-                                    : const AssetImage('assets/images/default_male.png')) as ImageProvider,
+                                    ? const AssetImage(
+                                        'assets/images/default_female.png')
+                                    : _gender == 'Other'
+                                        ? const AssetImage(
+                                            'assets/images/default_profile.png')
+                                        : const AssetImage(
+                                            'assets/images/default_male.png'))
+                                as ImageProvider,
                       ),
                     ),
                   ),
@@ -200,15 +223,15 @@ class _RegisterViewState extends State<RegisterView> {
                 SizedBox(height: ThemeConstant.mediumPadding),
                 Column(
                   children: [
+                    Text(
+                      'Gender:',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
                     Row(
                       children: [
-                        Text(
-                          'Gender:',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
                         Radio<String>(
                           value: 'Male',
                           groupValue: _gender,
@@ -258,7 +281,9 @@ class _RegisterViewState extends State<RegisterView> {
                 SizedBox(height: ThemeConstant.mediumPadding),
                 TextFormField(
                   controller: TextEditingController(
-                    text: _birthDate == null ? '' : DateFormat('yyyy/MM/dd').format(_birthDate!),
+                    text: _birthDate == null
+                        ? ''
+                        : DateFormat('yyyy/MM/dd').format(_birthDate!),
                   ),
                   decoration: const InputDecoration(
                     labelText: "Birthdate",
@@ -267,7 +292,8 @@ class _RegisterViewState extends State<RegisterView> {
                   onTap: () async {
                     final pickedDate = await showDatePicker(
                       context: context,
-                      initialDate: DateTime.now().subtract(const Duration(days: 365 * 16)),
+                      initialDate: DateTime.now()
+                          .subtract(const Duration(days: 365 * 16)),
                       firstDate: DateTime(1980),
                       lastDate: DateTime.now(),
                     );
@@ -343,7 +369,8 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: ThemeConstant.smallPadding),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: ThemeConstant.smallPadding),
                       child: Text(
                         "Login credentials",
                         style: theme.textTheme.bodyMedium,
@@ -374,7 +401,9 @@ class _RegisterViewState extends State<RegisterView> {
                     labelText: "Password",
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: theme.colorScheme.primary,
                       ),
                       onPressed: () {
@@ -400,12 +429,15 @@ class _RegisterViewState extends State<RegisterView> {
                     labelText: "Confirm Password",
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: theme.colorScheme.primary,
                       ),
                       onPressed: () {
                         setState(() {
-                          _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                          _isConfirmPasswordVisible =
+                              !_isConfirmPasswordVisible;
                         });
                       },
                     ),
@@ -427,22 +459,29 @@ class _RegisterViewState extends State<RegisterView> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       gradient: customTheme.buttonGradient,
-                      borderRadius: BorderRadius.circular(ThemeConstant.largeBorderRadius),
+                      borderRadius: BorderRadius.circular(
+                          ThemeConstant.largeBorderRadius),
                     ),
                     child: ElevatedButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          final registerState = context.read<RegisterBloc>().state;
+                          final registerState =
+                              context.read<RegisterBloc>().state;
                           final imageName = registerState.imageName;
 
                           print("birthday $_birthDate");
-                          final formattedBirthDate = DateFormat('yyyy-MM-dd').format(_birthDate!);
+                          final formattedBirthDate =
+                              DateFormat('yyyy-MM-dd').format(_birthDate!);
 
                           context.read<RegisterBloc>().add(
                                 RegisterUser(
                                   context: context,
-                                  email: widget.isEmail ? widget.emailOrPhone : _emailOrPhoneController2.text,
-                                  phoneNumber: widget.isEmail ? _emailOrPhoneController2.text : widget.emailOrPhone,
+                                  email: widget.isEmail
+                                      ? widget.emailOrPhone
+                                      : _emailOrPhoneController2.text,
+                                  phoneNumber: widget.isEmail
+                                      ? _emailOrPhoneController2.text
+                                      : widget.emailOrPhone,
                                   name: _nameController.text,
                                   gender: _gender ?? '',
                                   birthDate: formattedBirthDate,

@@ -39,7 +39,7 @@ class LoginUseCase implements UsecaseWithParams<String, LoginParams> {
         return saveResult.fold(
           (failure) => Left(failure),
           (_) async {
-           return Right(token);
+            return Right(token);
           },
         );
       },

@@ -4,6 +4,7 @@ import 'package:softwarica_student_management_bloc/core/theme/app_theme.dart';
 
 import '../../../../app/constants/theme_constant.dart';
 import '../view_model/login/login_bloc.dart';
+import '../view_model/login/login_event.dart';
 import 'register_with_email_view.dart';
 import 'register_with_number.dart';
 

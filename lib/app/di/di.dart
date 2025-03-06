@@ -1,19 +1,22 @@
-// lib/app/di/di.dart
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:softwarica_student_management_bloc/app/shared_prefs/token_shared_prefs.dart';
 import 'package:softwarica_student_management_bloc/core/network/api_service.dart';
+import 'package:softwarica_student_management_bloc/core/network/connectivity_service.dart';
 import 'package:softwarica_student_management_bloc/core/network/hive_service.dart';
 import 'package:softwarica_student_management_bloc/core/services/socket_service.dart';
+import 'package:softwarica_student_management_bloc/core/theme/theme_cubit.dart';
 import 'package:softwarica_student_management_bloc/features/auth/data/data_source/local_data_source/auth_local_datasource.dart';
 import 'package:softwarica_student_management_bloc/features/auth/data/data_source/remote_data_source/auth_remote_data_source.dart';
 import 'package:softwarica_student_management_bloc/features/auth/data/repository/auth_local_repository/auth_local_repository.dart';
 import 'package:softwarica_student_management_bloc/features/auth/data/repository/auth_remote_repository/auth_remote_repository.dart';
+import 'package:softwarica_student_management_bloc/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/repository/auth_repository.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/use_case/get_current_user_use_case.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/use_case/login_usecase.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/use_case/register_user_usecase.dart';
+import 'package:softwarica_student_management_bloc/features/auth/domain/use_case/update_profile_photo_use_case.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/use_case/update_profile_usecase.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/use_case/upload_image_usecase.dart';
 import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/edit_profile/edit_profile_bloc.dart';
@@ -24,9 +27,33 @@ import 'package:softwarica_student_management_bloc/features/home/data/repository
 import 'package:softwarica_student_management_bloc/features/home/domain/repository/user_repository.dart';
 import 'package:softwarica_student_management_bloc/features/home/domain/use_case/get_likers_usecase.dart';
 import 'package:softwarica_student_management_bloc/features/home/domain/use_case/get_users_usecase.dart';
+import 'package:softwarica_student_management_bloc/features/home/domain/use_case/sewipe_left_usesace.dart';
+import 'package:softwarica_student_management_bloc/features/home/domain/use_case/swipe_right_usecase.dart';
 import 'package:softwarica_student_management_bloc/features/home/presentation/view_model/bloc/user_bloc.dart';
 import 'package:softwarica_student_management_bloc/features/home/presentation/view_model/home_cubit.dart';
+import 'package:softwarica_student_management_bloc/features/messages/data/data_source/message_remote_data_source.dart';
+import 'package:softwarica_student_management_bloc/features/messages/data/repositories/message_remote_repository.dart';
+import 'package:softwarica_student_management_bloc/features/messages/domain/use_case/get_matches_use_case.dart';
+import 'package:softwarica_student_management_bloc/features/messages/domain/use_case/send_message_use_case.dart';
+import 'package:softwarica_student_management_bloc/features/messages/presentation/view_model/bloc/message_bloc.dart';
+import 'package:softwarica_student_management_bloc/features/photos/data/data_source/remote_data_source/photos_remote_data_source.dart';
+import 'package:softwarica_student_management_bloc/features/photos/domain/repository/photos_repository.dart';
+import 'package:softwarica_student_management_bloc/features/photos/domain/use_case/add_photos_use_case.dart';
+import 'package:softwarica_student_management_bloc/features/photos/domain/use_case/get_photos_use_case.dart';
+import 'package:softwarica_student_management_bloc/features/photos/presentation/view_model/bloc/photos_bloc.dart';
+import 'package:softwarica_student_management_bloc/features/preferences/data/data_source/preference_remote_data_source.dart';
+import 'package:softwarica_student_management_bloc/features/preferences/data/repositories/preference_remote_repository.dart';
+import 'package:softwarica_student_management_bloc/features/preferences/domain/use_case/get_preference_use_case.dart';
+import 'package:softwarica_student_management_bloc/features/preferences/domain/use_case/update_preference_use_case.dart';
+import 'package:softwarica_student_management_bloc/features/preferences/presentation/view_model/bloc/preference_bloc.dart';
 import 'package:softwarica_student_management_bloc/features/splash/presentation/view_model/splash_cubit.dart';
+import 'package:softwarica_student_management_bloc/features/subscription/data/datasources/payment_service.dart';
+import 'package:softwarica_student_management_bloc/features/subscription/data/datasources/subscription_remote_datasource.dart';
+import 'package:softwarica_student_management_bloc/features/subscription/data/repositories/subscription_remote_repository.dart';
+import 'package:softwarica_student_management_bloc/features/subscription/domain/repositories/subscription_repository.dart';
+import 'package:softwarica_student_management_bloc/features/subscription/domain/usecases/get_subscription_expiry.dart';
+import 'package:softwarica_student_management_bloc/features/subscription/domain/usecases/save_subscription.dart';
+import 'package:softwarica_student_management_bloc/features/subscription/presentation/view_model/bloc/subscription_bloc.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/data/data_source/remote_data_source/user_details_remote_data_source.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/data/repository/auth_remote_repository/user_details_remote_repository.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/domain/repository/user_details_repository.dart';
@@ -34,43 +61,17 @@ import 'package:softwarica_student_management_bloc/features/user_details/domain/
 import 'package:softwarica_student_management_bloc/features/user_details/domain/use_case/update_user_details_use_case.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/presentation/view_model/bloc/user_details_bloc.dart';
 
-import '../../core/theme/theme_cubit.dart';
-import '../../features/auth/domain/use_case/update_profile_photo_use_case.dart';
-import '../../features/home/domain/use_case/sewipe_left_usesace.dart';
-import '../../features/home/domain/use_case/swipe_right_usecase.dart';
-import '../../features/messages/data/data_source/message_remote_data_source.dart';
-import '../../features/messages/data/repositories/message_remote_repository.dart';
-import '../../features/messages/domain/use_case/get_matches_use_case.dart';
-import '../../features/messages/domain/use_case/send_message_use_case.dart';
-import '../../features/messages/presentation/view_model/bloc/message_bloc.dart';
-import '../../features/photos/data/data_source/remote_data_source/photos_remote_data_source.dart';
-import '../../features/photos/domain/repository/photos_repository.dart';
-import '../../features/photos/domain/use_case/add_photos_use_case.dart';
-import '../../features/photos/domain/use_case/get_photos_use_case.dart';
-import '../../features/photos/presentation/view_model/bloc/photos_bloc.dart';
-import '../../features/preferences/data/data_source/preference_remote_data_source.dart';
-import '../../features/preferences/data/repositories/preference_remote_repository.dart';
-import '../../features/preferences/domain/use_case/get_preference_use_case.dart';
-import '../../features/preferences/domain/use_case/update_preference_use_case.dart';
-import '../../features/preferences/presentation/view_model/bloc/preference_bloc.dart';
-import '../../features/subscription/data/datasources/payment_service.dart';
-import '../../features/subscription/data/datasources/subscription_remote_datasource.dart';
-import '../../features/subscription/data/repositories/subscription_remote_repository.dart';
-import '../../features/subscription/domain/repositories/subscription_repository.dart';
-import '../../features/subscription/domain/usecases/get_subscription_expiry.dart';
-import '../../features/subscription/domain/usecases/save_subscription.dart';
-import '../../features/subscription/presentation/view_model/bloc/subscription_bloc.dart';
-
 final getIt = GetIt.instance;
 
 Future<void> initDependencies() async {
+  await _initCoreDependencies();
   await _initHiveService();
   await _initApiService();
   await _initSharedPreferences();
   await _initThemeDependencies();
 
   // Core dependencies first
-  await _initAuthDependencies(); 
+  await _initAuthDependencies();
   await _initLoginDependencies();
   await _initSplashScreenDependencies();
   await _initHomeDependencies();
@@ -81,6 +82,10 @@ Future<void> initDependencies() async {
   await _initPreferenceDependencies();
   await _initMessageDependencies();
   await _initSubscriptionDependencies();
+}
+
+Future<void> _initCoreDependencies() async {
+  getIt.registerSingleton<ConnectivityService>(ConnectivityService());
 }
 
 Future<void> _initApiService() async {
@@ -106,7 +111,7 @@ Future<void> _initAuthDependencies() async {
   );
   // Remote
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(getIt<Dio>()),
+    () => AuthRemoteDataSource(getIt<Dio>()),
   );
 
   // =========================== Repository ===========================
@@ -114,9 +119,19 @@ Future<void> _initAuthDependencies() async {
   getIt.registerLazySingleton<AuthLocalRepository>(
     () => AuthLocalRepository(getIt<AuthLocalDataSource>()),
   );
-  // Remote - Register as IAuthRepository
+  // Remote
+  getIt.registerLazySingleton<AuthRemoteRepository>(
+    () => AuthRemoteRepository(
+        getIt<AuthRemoteDataSource>(), getIt<AuthLocalDataSource>()),
+  );
+
+  // Domain Repository with Connectivity Check
   getIt.registerLazySingleton<IAuthRepository>(
-    () => AuthRemoteRepository(getIt<AuthRemoteDataSource>()),
+    () => AuthRepositoryImpl(
+      remoteRepository: getIt<AuthRemoteRepository>(),
+      localRepository: getIt<AuthLocalRepository>(),
+      connectivityService: getIt<ConnectivityService>(),
+    ),
   );
 
   // =========================== Use Cases ===========================
@@ -198,7 +213,6 @@ Future<void> _initUserDetailsDependencies() async {
   );
 }
 
-// lib/app/di/di.dart (excerpt)
 Future<void> _initUserProfileDependencies() async {
   getIt.registerLazySingleton(() => SocketService());
 
@@ -222,11 +236,11 @@ Future<void> _initUserProfileDependencies() async {
   );
   getIt.registerFactory<UserBloc>(
     () => UserBloc(
-      fetchUsersUseCase:      getIt<GetUsersUseCase>(),
+      fetchUsersUseCase: getIt<GetUsersUseCase>(),
       fetchLikersUseCase: getIt<GetLikersUseCase>(),
       swipeLeftUseCase: getIt<SwipeLeftUseCase>(),
-      swipeRightUseCase:  getIt<SwipeRightUseCase>(),
-      socketService:  getIt<SocketService>(),  
+      swipeRightUseCase: getIt<SwipeRightUseCase>(),
+      socketService: getIt<SocketService>(),
     ),
   );
 }
@@ -342,7 +356,6 @@ Future<void> _initSubscriptionDependencies() async {
   );
   getIt.registerSingleton<PaymentService>(PaymentService(getIt<Dio>()));
 }
-
 
 Future<void> _initThemeDependencies() async {
   print('Initializing theme dependencies');

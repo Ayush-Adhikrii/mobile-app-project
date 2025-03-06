@@ -1,78 +1,152 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
-
-import '../../app/constants/hive_table_constant.dart';
-import '../../features/auth/data/model/auth_hive_model.dart';
-import '../../features/user_details/data/model/user_details_hive_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:softwarica_student_management_bloc/app/constants/hive_table_constant.dart';
+import 'package:softwarica_student_management_bloc/features/auth/data/model/auth_hive_model.dart';
+import 'package:softwarica_student_management_bloc/features/user_details/data/model/user_details_hive_model.dart';
 
 class HiveService {
-  static Future<void> init() async {
+  Future<void> init() async {
     // Initialize the database
     var directory = await getApplicationDocumentsDirectory();
-    var path = '${directory.path}hooked.db';
-
+    var path = '${directory.path}/hooked.db';
     Hive.init(path);
 
     // Register Adapters
-
     Hive.registerAdapter(AuthHiveModelAdapter());
+    Hive.registerAdapter(UserDetailsHiveModelAdapter());
   }
 
   // Auth Queries
   Future<void> register(AuthHiveModel auth) async {
-    var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
-    await box.put(auth.userId, auth);
+    try {
+      var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
+      await box.put(auth.userId, auth);
+      print('User registered in Hive: ${auth.userId}');
+      await box.close();
+    } catch (e) {
+      print('Error registering user in Hive: $e');
+      rethrow;
+    }
   }
 
   Future<AuthHiveModel?> getData() async {
-    var box = await Hive.openBox<AuthHiveModel>('authBox');
-    return box.get(
-        'userKey'); // Replace 'userKey' with the actual key used to save the user.
+    try {
+      // Get the current userId from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('current_user_id');
+      if (userId == null) {
+        print('No userId found in SharedPreferences');
+        return null;
+      }
+
+      // Fetch the user from Hive using the userId
+      var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
+      final user = box.get(userId);
+      print('User fetched from Hive: ${user?.userId}');
+      await box.close();
+      return user;
+    } catch (e) {
+      print('Error fetching user data from Hive: $e');
+      rethrow;
+    }
+  }
+
+  Future<AuthHiveModel?> getUserById(String userId) async {
+    try {
+      var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
+      final user = box.get(userId);
+      print('User fetched from Hive by ID ($userId): ${user?.userId}');
+      await box.close();
+      return user;
+    } catch (e) {
+      print('Error fetching user by ID ($userId) from Hive: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateUser(AuthHiveModel auth) async {
+    try {
+      var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
+      await box.put(auth.userId, auth);
+      print('User updated in Hive: ${auth.userId}');
+      await box.close();
+    } catch (e) {
+      print('Error updating user in Hive: $e');
+      rethrow;
+    }
   }
 
   Future<void> deleteAuth(String id) async {
-    var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
-    await box.delete(id);
+    try {
+      var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
+      await box.delete(id);
+      print('User deleted from Hive: $id');
+      await box.close();
+    } catch (e) {
+      print('Error deleting user from Hive: $e');
+      rethrow;
+    }
   }
 
   Future<List<AuthHiveModel>> getAllAuth() async {
-    var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
-    return box.values.toList();
+    try {
+      var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
+      final users = box.values.toList();
+      print('Fetched ${users.length} users from Hive');
+      await box.close();
+      return users;
+    } catch (e) {
+      print('Error fetching all users from Hive: $e');
+      rethrow;
+    }
   }
 
-  // Login using username and password
   Future<AuthHiveModel?> login(String userName, String password) async {
-    // var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
-    // var auth = box.values.firstWhere(
-    //     (element) =>
-    //         element.username == username && element.password == password,
-    //     orElse: () => AuthHiveModel.initial());
-    // return auth;
-
-    var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
-    var user = box.values.firstWhere((element) =>
-        element.userName == userName && element.password == password);
-    box.close();
-    return user;
+    try {
+      var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
+      final user = box.values.firstWhere(
+        (element) => element.userName == userName && element.password == password,
+        orElse: () => throw Exception('Invalid credentials'),
+      );
+      print('User logged in from Hive: ${user.userId}');
+      await box.close();
+      return user;
+    } catch (e) {
+      print('Error logging in from Hive: $e');
+      rethrow;
+    }
   }
 
   Future<void> clearAll() async {
-    await Hive.deleteBoxFromDisk(HiveTableConstant.userBox);
+    try {
+      await Hive.deleteBoxFromDisk(HiveTableConstant.userBox);
+      print('Cleared all data from Hive');
+    } catch (e) {
+      print('Error clearing all data from Hive: $e');
+      rethrow;
+    }
   }
 
-  // Clear user Box
   Future<void> clearUserBox() async {
-    await Hive.deleteBoxFromDisk(HiveTableConstant.userBox);
+    try {
+      await Hive.deleteBoxFromDisk(HiveTableConstant.userBox);
+      print('Cleared user box from Hive');
+    } catch (e) {
+      print('Error clearing user box from Hive: $e');
+      rethrow;
+    }
   }
 
-  //for user details
-
+  // User Details Queries
   Future<void> addUserDetails(UserDetailsHiveModel userDetails) async {
     try {
       final box = await Hive.openBox<UserDetailsHiveModel>('userDetailsBox');
-      await box.put(userDetails.userId, userDetails); // Use userId as the key
+      await box.put(userDetails.userId, userDetails);
+      print('User details added to Hive: ${userDetails.userId}');
+      await box.close();
     } catch (e) {
-      print('Error adding user details: $e');
+      print('Error adding user details to Hive: $e');
       rethrow;
     }
   }
@@ -80,19 +154,29 @@ class HiveService {
   Future<UserDetailsHiveModel?> getUserDetails() async {
     try {
       final box = await Hive.openBox<UserDetailsHiveModel>('userDetailsBox');
-      // Assuming you are only storing one user details, you can fetch it like this:
       if (box.isNotEmpty) {
-        return box.values.first;
+        final userDetails = box.values.first;
+        print('User details fetched from Hive: ${userDetails.userId}');
+        await box.close();
+        return userDetails;
       } else {
+        print('No user details found in Hive');
+        await box.close();
         return null;
       }
     } catch (e) {
-      print('Error getting user details: $e');
+      print('Error getting user details from Hive: $e');
       rethrow;
     }
   }
 
   Future<void> close() async {
-    await Hive.close();
+    try {
+      await Hive.close();
+      print('Hive database closed');
+    } catch (e) {
+      print('Error closing Hive database: $e');
+      rethrow;
+    }
   }
 }

@@ -6,6 +6,7 @@ import 'package:softwarica_student_management_bloc/features/messages/presentatio
 import 'package:softwarica_student_management_bloc/features/preferences/presentation/view/pages/preference_page.dart';
 import 'package:softwarica_student_management_bloc/features/subscription/presentation/view/likes_page.dart';
 
+import '../../../auth/presentation/view_model/login/login_event.dart';
 import '../../../user_details/presentation/view/profile_view.dart';
 import '../view/swipe_screen.dart';
 import 'home_state.dart';

@@ -1,37 +1,19 @@
-// lib/features/auth/presentation/view_model/login/login_event.dart
-part of 'login_bloc.dart';
+import 'package:flutter/material.dart';
 
-abstract class LoginEvent extends Equatable {
-  const LoginEvent();
-
-  @override
-  List<Object?> get props => [];
-}
+class LoginEvent {}
 
 class NavigateRegisterScreenEvent extends LoginEvent {
   final BuildContext context;
   final Widget destination;
 
-  const NavigateRegisterScreenEvent({
-    required this.context,
-    required this.destination,
-  });
-
-  @override
-  List<Object?> get props => [context, destination];
+  NavigateRegisterScreenEvent(this.context, this.destination);
 }
 
 class NavigateHomeScreenEvent extends LoginEvent {
   final BuildContext context;
   final Widget destination;
 
-  const NavigateHomeScreenEvent({
-    required this.context,
-    required this.destination,
-  });
-
-  @override
-  List<Object?> get props => [context, destination];
+  NavigateHomeScreenEvent({required this.context, required this.destination});
 }
 
 class LoginUserEvent extends LoginEvent {
@@ -39,32 +21,23 @@ class LoginUserEvent extends LoginEvent {
   final String password;
   final BuildContext context;
 
-  const LoginUserEvent({
+  LoginUserEvent({
     required this.userName,
     required this.password,
     required this.context,
   });
-
-  @override
-  List<Object?> get props => [userName, password, context];
 }
 
 class FetchCurrentUserEvent extends LoginEvent {
   final BuildContext context;
 
-  const FetchCurrentUserEvent(this.context);
-
-  @override
-  List<Object?> get props => [context];
+  FetchCurrentUserEvent(this.context);
 }
 
 class LogoutUserEvent extends LoginEvent {
   final BuildContext context;
 
-  const LogoutUserEvent(this.context);
-
-  @override
-  List<Object?> get props => [context];
+  LogoutUserEvent(this.context);
 }
 
 class ChangePasswordEvent extends LoginEvent {
@@ -72,12 +45,9 @@ class ChangePasswordEvent extends LoginEvent {
   final String newPassword;
   final BuildContext context;
 
-  const ChangePasswordEvent({
+  ChangePasswordEvent({
     required this.oldPassword,
     required this.newPassword,
     required this.context,
   });
-
-  @override
-  List<Object?> get props => [oldPassword, newPassword, context];
 }

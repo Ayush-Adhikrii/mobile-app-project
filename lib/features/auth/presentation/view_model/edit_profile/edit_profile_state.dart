@@ -1,4 +1,3 @@
-// lib/features/auth/presentation/bloc/edit_profile_state.dart
 import 'package:equatable/equatable.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
 
@@ -18,19 +17,20 @@ class EditProfileLoading extends EditProfileState {
 }
 
 class EditProfileSuccess extends EditProfileState {
-  final AuthEntity updatedUser;
+  final AuthEntity user;
 
-  const EditProfileSuccess(this.updatedUser);
+  const EditProfileSuccess(this.user);
 
   @override
-  List<Object?> get props => [updatedUser];
+  List<Object?> get props => [user];
 }
 
 class EditProfileError extends EditProfileState {
   final String message;
+  final bool isOffline;
 
-  const EditProfileError(this.message);
+  const EditProfileError(this.message, {this.isOffline = false});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, isOffline];
 }

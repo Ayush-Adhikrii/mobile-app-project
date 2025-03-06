@@ -1,18 +1,8 @@
-part of 'register_bloc.dart';
+import 'dart:io';
 
-sealed class RegisterEvent extends Equatable {
-  const RegisterEvent();
+import 'package:flutter/material.dart';
 
-  @override
-  List<Object> get props => [];
-}
-
-class UploadImage extends RegisterEvent {
-  final File file;
-  const UploadImage({
-    required this.file,
-  });
-}
+class RegisterEvent {}
 
 class RegisterUser extends RegisterEvent {
   final BuildContext context;
@@ -26,8 +16,8 @@ class RegisterUser extends RegisterEvent {
   final String? starSign;
   final String? bio;
   final String? profilePhoto;
-  
-  const RegisterUser({
+
+  RegisterUser({
     required this.context,
     required this.name,
     this.email,
@@ -40,19 +30,11 @@ class RegisterUser extends RegisterEvent {
     this.bio,
     this.profilePhoto,
   });
+}
 
-  @override
-  List<Object> get props => [
-        context,
-        name,
-        email ?? '',
-        phoneNumber ?? '',
-        userName,
-        password,
-        gender ?? '',
-        birthDate ?? '',
-        starSign ?? '',
-        bio ?? '',
-        profilePhoto ?? '',
-      ];
+class UploadImage extends RegisterEvent {
+  final BuildContext context;
+  final File file;
+
+  UploadImage(this.context, this.file);
 }

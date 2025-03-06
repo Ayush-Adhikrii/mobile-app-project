@@ -146,6 +146,7 @@ class _UpdateProfileViewState extends State<UpdateProfileView> {
             if (_profilePhoto != null &&
                 !context.read<EditProfileBloc>().isClosed) {
               context.read<EditProfileBloc>().add(UploadProfilePhoto(
+                    context: context,
                     userId: widget.authUser.userId!,
                     image: _profilePhoto!,
                   ));
@@ -306,6 +307,7 @@ class _UpdateProfileViewState extends State<UpdateProfileView> {
                               _emailController.text.isNotEmpty &&
                               _userNameController.text.isNotEmpty) {
                             context.read<EditProfileBloc>().add(UpdateProfile(
+                                  context: context,
                                   userId: widget.authUser.userId!,
                                   name: _nameController.text,
                                   gender: _gender!,
