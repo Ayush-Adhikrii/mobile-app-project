@@ -1,5 +1,6 @@
 // lib/features/auth/domain/usecases/upload_profile_photo_usecase.dart
 import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:softwarica_student_management_bloc/core/error/failure.dart';
@@ -12,7 +13,8 @@ class UploadProfilePhotoUseCase {
 
   UploadProfilePhotoUseCase(this.repository);
 
-  Future<Either<Failure, AuthEntity>> call(UploadProfilePhotoParams params) async {
+  Future<Either<Failure, AuthEntity>> call(
+      UploadProfilePhotoParams params) async {
     return await repository.uploadProfilePhoto(params);
   }
 }

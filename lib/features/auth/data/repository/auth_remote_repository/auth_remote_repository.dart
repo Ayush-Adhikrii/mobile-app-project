@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:softwarica_student_management_bloc/core/error/failure.dart';
 import 'package:softwarica_student_management_bloc/features/auth/data/data_source/local_data_source/auth_local_datasource.dart';
@@ -26,9 +27,11 @@ class AuthRemoteRepository implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, String>> loginUser(String userName, String password) async {
+  Future<Either<Failure, String>> loginUser(
+      String userName, String password) async {
     try {
-      final (token, user) = await _authRemoteDataSource.loginUser(userName, password);
+      final (token, user) =
+          await _authRemoteDataSource.loginUser(userName, password);
       await _authLocalDataSource.registerUser(user); // Cache in Hive
       return Right(token);
     } catch (e) {
@@ -65,7 +68,8 @@ class AuthRemoteRepository implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, AuthEntity>> updateProfile(UpdateProfileParams params) async {
+  Future<Either<Failure, AuthEntity>> updateProfile(
+      UpdateProfileParams params) async {
     try {
       final user = await _authRemoteDataSource.updateProfile(params);
       await _authLocalDataSource.registerUser(user); // Update cache in Hive
@@ -76,7 +80,8 @@ class AuthRemoteRepository implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, AuthEntity>> uploadProfilePhoto(UploadProfilePhotoParams params) async {
+  Future<Either<Failure, AuthEntity>> uploadProfilePhoto(
+      UploadProfilePhotoParams params) async {
     try {
       final user = await _authRemoteDataSource.uploadProfilePhoto(params);
       await _authLocalDataSource.registerUser(user); // Update cache in Hive

@@ -5,7 +5,7 @@ class ApiEndpoints {
   static const Duration connectionTimeout = Duration(seconds: 1000);
   static const Duration receiveTimeout = Duration(seconds: 1000);
 
-  static const String ipAddress = "192.168.1.69";
+  static const String ipAddress = "172.25.0.69";
   static String get baseUrl => "http://$ipAddress:5000/api/"; // Backend API
   static String get profilePhotoUrl =>
       "http://$ipAddress:5173/profilePhotos/"; // Frontend server

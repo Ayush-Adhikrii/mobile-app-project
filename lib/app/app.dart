@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +18,7 @@ import 'package:softwarica_student_management_bloc/features/photos/presentation/
 import 'package:softwarica_student_management_bloc/features/splash/presentation/view/splash_view.dart';
 import 'package:softwarica_student_management_bloc/features/splash/presentation/view_model/splash_cubit.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/presentation/view_model/bloc/user_details_bloc.dart';
+
 import '../features/messages/presentation/view/chat_page.dart';
 import '../features/messages/presentation/view/match_page.dart';
 import '../features/messages/presentation/view_model/bloc/message_bloc.dart';
@@ -43,14 +45,17 @@ class _AppState extends State<App> {
     super.dispose();
   }
 
-  void _updateThemeBasedOnProximity(int proximityValue, ThemeState themeState, ThemeCubit themeCubit) {
+  void _updateThemeBasedOnProximity(
+      int proximityValue, ThemeState themeState, ThemeCubit themeCubit) {
     final isNear = proximityValue == 1;
     final isDark = isNear;
     if (isDark != themeState.isDarkMode) {
-      print('Updating theme: isDark=$isDark (proximityValue=$proximityValue, isNear=$isNear)');
+      print(
+          'Updating theme: isDark=$isDark (proximityValue=$proximityValue, isNear=$isNear)');
       themeCubit.setDarkMode(isDark);
     } else {
-      print('No theme update needed: isDark=$isDark (proximityValue=$proximityValue, isNear=$isNear), current isDarkMode=${themeState.isDarkMode}');
+      print(
+          'No theme update needed: isDark=$isDark (proximityValue=$proximityValue, isNear=$isNear), current isDarkMode=${themeState.isDarkMode}');
     }
   }
 
@@ -80,14 +85,17 @@ class _AppState extends State<App> {
       ],
       child: BlocListener<ThemeCubit, ThemeState>(
         listener: (context, themeState) {
-          print('ThemeCubit state changed: isAutoTheme=${themeState.isAutoTheme}, isDarkMode=${themeState.isDarkMode}');
+          print(
+              'ThemeCubit state changed: isAutoTheme=${themeState.isAutoTheme}, isDarkMode=${themeState.isDarkMode}');
           if (themeState.isAutoTheme) {
             _proximitySensorSubscription?.cancel();
-            _proximitySensorSubscription = _proximityChannel.receiveBroadcastStream().listen(
+            _proximitySensorSubscription =
+                _proximityChannel.receiveBroadcastStream().listen(
               (dynamic proximityValue) {
                 final int value = proximityValue as int;
                 print('Proximity sensor emitted value: proximityValue=$value');
-                _updateThemeBasedOnProximity(value, themeState, context.read<ThemeCubit>());
+                _updateThemeBasedOnProximity(
+                    value, themeState, context.read<ThemeCubit>());
               },
               onError: (error) {
                 print('Proximity sensor error: $error');
@@ -110,11 +118,13 @@ class _AppState extends State<App> {
         },
         child: BlocBuilder<ThemeCubit, ThemeState>(
           builder: (context, themeState) {
-            print('App rebuilding with theme: isDarkMode=${themeState.isDarkMode}');
+            print(
+                'App rebuilding with theme: isDarkMode=${themeState.isDarkMode}');
             return MaterialApp(
               debugShowCheckedModeBanner: false,
               title: 'Hooked',
-              theme: AppTheme.getApplicationTheme(isDarkMode: themeState.isDarkMode),
+              theme: AppTheme.getApplicationTheme(
+                  isDarkMode: themeState.isDarkMode),
               initialRoute: '/splash',
               routes: {
                 '/splash': (context) => const SplashView(),
@@ -138,7 +148,8 @@ class _AppState extends State<App> {
                       child: const ProfilePage(),
                     ),
                 '/update_profile': (context) {
-                  final authUser = ModalRoute.of(context)!.settings.arguments as AuthEntity;
+                  final authUser =
+                      ModalRoute.of(context)!.settings.arguments as AuthEntity;
                   return UpdateProfileView(authUser: authUser);
                 },
                 '/matches': (context) => const MatchesPage(),

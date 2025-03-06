@@ -102,7 +102,8 @@ class _SwipeScreenState extends State<SwipeScreen> {
               SnackBar(
                 content: Text(
                   'You have got a match!',
-                  style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface),
+                  style: theme.textTheme.bodyLarge
+                      ?.copyWith(color: theme.colorScheme.onSurface),
                 ),
                 backgroundColor: ThemeConstant.successColor.withOpacity(0.9),
                 duration: const Duration(seconds: 3),
@@ -132,7 +133,8 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 fit: BoxFit.contain,
               ),
             ),
-            backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.background,
+            backgroundColor:
+                theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
           ),
           backgroundColor: theme.colorScheme.surface,
           body: SafeArea(
@@ -142,11 +144,17 @@ class _SwipeScreenState extends State<SwipeScreen> {
                   builder: (context, state) {
                     if (state is UserInitial) {
                       context.read<UserBloc>().add(FetchUsers());
-                      return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
+                      return Center(
+                          child: CircularProgressIndicator(
+                              color: theme.colorScheme.primary));
                     } else if (state is UserLoading) {
-                      return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
+                      return Center(
+                          child: CircularProgressIndicator(
+                              color: theme.colorScheme.primary));
                     } else if (state is UserLoaded || state is UserMatchFound) {
-                      final users = state is UserLoaded ? state.users : (state as UserMatchFound).users;
+                      final users = state is UserLoaded
+                          ? state.users
+                          : (state as UserMatchFound).users;
                       if (users.isEmpty) {
                         return const NoMatchesFound();
                       }
@@ -156,9 +164,13 @@ class _SwipeScreenState extends State<SwipeScreen> {
                         isTablet: isTablet,
                       );
                     } else if (state is UserError) {
-                      return Center(child: Text('Error: ${state.message}', style: theme.textTheme.bodyLarge));
+                      return Center(
+                          child: Text('Error: ${state.message}',
+                              style: theme.textTheme.bodyLarge));
                     }
-                    return Center(child: Text('Loading matches...', style: theme.textTheme.bodyLarge));
+                    return Center(
+                        child: Text('Loading matches...',
+                            style: theme.textTheme.bodyLarge));
                   },
                 ),
                 if (_swipeMessage != null)
@@ -171,7 +183,9 @@ class _SwipeScreenState extends State<SwipeScreen> {
                       child: Text(
                         _swipeMessage!,
                         style: theme.textTheme.displayMedium?.copyWith(
-                          color: _swipeMessage == 'Liked!' ? ThemeConstant.successColor : ThemeConstant.errorColor,
+                          color: _swipeMessage == 'Liked!'
+                              ? ThemeConstant.successColor
+                              : ThemeConstant.errorColor,
                         ),
                       ),
                     ),
@@ -208,7 +222,8 @@ class _SwipeCardsState extends State<SwipeCards> {
   final CardSwiperController _swiperController = CardSwiperController();
   StreamSubscription<GyroscopeEvent>? _gyroscopeSubscription;
   DateTime? _lastSwipeTime;
-  static const double swipeThreshold = 5.0; // Reasonable threshold for gyroscope
+  static const double swipeThreshold =
+      5.0; // Reasonable threshold for gyroscope
   static const int swipeCooldown = 500; // Cooldown to prevent rapid swipes
 
   @override
@@ -217,8 +232,12 @@ class _SwipeCardsState extends State<SwipeCards> {
     _initSwipeDetection();
 
     if (widget.users.isNotEmpty) {
-      context.read<UserDetailsBloc>().add(FetchUserDetails(widget.users[_currentIndex].id));
-      context.read<PhotosBloc>().add(FetchPhotos(widget.users[_currentIndex].id));
+      context
+          .read<UserDetailsBloc>()
+          .add(FetchUserDetails(widget.users[_currentIndex].id));
+      context
+          .read<PhotosBloc>()
+          .add(FetchPhotos(widget.users[_currentIndex].id));
       Future.delayed(const Duration(milliseconds: 100), () {
         if (mounted) {
           setState(() {
@@ -236,7 +255,8 @@ class _SwipeCardsState extends State<SwipeCards> {
   void _initSwipeDetection() {
     _gyroscopeSubscription = gyroscopeEvents.listen((event) {
       final now = DateTime.now();
-      if (_lastSwipeTime != null && now.difference(_lastSwipeTime!).inMilliseconds < swipeCooldown) {
+      if (_lastSwipeTime != null &&
+          now.difference(_lastSwipeTime!).inMilliseconds < swipeCooldown) {
         return;
       }
 
@@ -267,7 +287,8 @@ class _SwipeCardsState extends State<SwipeCards> {
     final double extraPhotoHeight = MediaQuery.of(context).size.width * 0.3;
 
     if (!_isReady || widget.users.isEmpty) {
-      return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
+      return Center(
+          child: CircularProgressIndicator(color: theme.colorScheme.primary));
     }
 
     if (_allCardsSwiped) {
@@ -281,9 +302,10 @@ class _SwipeCardsState extends State<SwipeCards> {
       padding: EdgeInsets.zero,
       cardBuilder: (context, index, percentX, percentY) {
         final user = widget.users[index];
-        final photoUrl = user.profilePhoto != null && user.profilePhoto!.isNotEmpty
-            ? '${ApiEndpoints.profilePhotoUrl}${user.profilePhoto}'
-            : '';
+        final photoUrl =
+            user.profilePhoto != null && user.profilePhoto!.isNotEmpty
+                ? '${ApiEndpoints.profilePhotoUrl}${user.profilePhoto}'
+                : '';
         return Card(
           color: theme.colorScheme.surface,
           child: CustomScrollView(
@@ -297,12 +319,15 @@ class _SwipeCardsState extends State<SwipeCards> {
                         Container(
                           height: photoHeight,
                           width: double.infinity,
-                          margin: EdgeInsets.symmetric(horizontal: ThemeConstant.mediumPadding),
+                          margin: EdgeInsets.symmetric(
+                              horizontal: ThemeConstant.mediumPadding),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(ThemeConstant.mediumBorderRadius),
+                            borderRadius: BorderRadius.circular(
+                                ThemeConstant.mediumBorderRadius),
                           ),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(ThemeConstant.mediumBorderRadius),
+                            borderRadius: BorderRadius.circular(
+                                ThemeConstant.mediumBorderRadius),
                             child: Image.network(
                               photoUrl,
                               fit: BoxFit.cover,
@@ -310,7 +335,8 @@ class _SwipeCardsState extends State<SwipeCards> {
                                 return Icon(
                                   Icons.person,
                                   size: widget.isTablet ? 120 : 100,
-                                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.5),
                                 );
                               },
                             ),
@@ -356,10 +382,13 @@ class _SwipeCardsState extends State<SwipeCards> {
                             Row(
                               children: [
                                 Container(
-                                  padding: EdgeInsets.all(ThemeConstant.smallPadding),
+                                  padding: EdgeInsets.all(
+                                      ThemeConstant.smallPadding),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(ThemeConstant.mediumBorderRadius),
-                                    border: Border.all(color: theme.colorScheme.primary),
+                                    borderRadius: BorderRadius.circular(
+                                        ThemeConstant.mediumBorderRadius),
+                                    border: Border.all(
+                                        color: theme.colorScheme.primary),
                                   ),
                                   child: Icon(
                                     _getGenderIcon(user.gender!),
@@ -374,16 +403,21 @@ class _SwipeCardsState extends State<SwipeCards> {
                                 ),
                               ],
                             ),
-                          if (user.starSign != null && user.starSign!.isNotEmpty)
+                          if (user.starSign != null &&
+                              user.starSign!.isNotEmpty)
                             Padding(
-                              padding: EdgeInsets.only(top: ThemeConstant.smallPadding),
+                              padding: EdgeInsets.only(
+                                  top: ThemeConstant.smallPadding),
                               child: Row(
                                 children: [
                                   Container(
-                                    padding: EdgeInsets.all(ThemeConstant.smallPadding),
+                                    padding: EdgeInsets.all(
+                                        ThemeConstant.smallPadding),
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(ThemeConstant.mediumBorderRadius),
-                                      border: Border.all(color: theme.colorScheme.primary),
+                                      borderRadius: BorderRadius.circular(
+                                          ThemeConstant.mediumBorderRadius),
+                                      border: Border.all(
+                                          color: theme.colorScheme.primary),
                                     ),
                                     child: Icon(
                                       Icons.star_border,
@@ -401,7 +435,8 @@ class _SwipeCardsState extends State<SwipeCards> {
                             ),
                           if (user.bio != null && user.bio!.isNotEmpty)
                             Padding(
-                              padding: EdgeInsets.only(top: ThemeConstant.smallPadding),
+                              padding: EdgeInsets.only(
+                                  top: ThemeConstant.smallPadding),
                               child: Text(
                                 user.bio!,
                                 style: theme.textTheme.bodyLarge,
@@ -420,32 +455,62 @@ class _SwipeCardsState extends State<SwipeCards> {
                               if (photosState is PhotosLoaded) {
                                 photos = photosState.photos
                                     .where((photo) => photo.image != null)
-                                    .map((photo) => '${ApiEndpoints.userImageUrl}${photo.image}')
+                                    .map((photo) =>
+                                        '${ApiEndpoints.userImageUrl}${photo.image}')
                                     .toList();
                               }
 
                               if (detailsState is UserDetailsLoaded) {
                                 final userDetails = detailsState.userDetails;
                                 details = [
-                                  {'label': 'Profession', 'value': userDetails.profession ?? ''},
-                                  {'label': 'Education', 'value': userDetails.education ?? ''},
+                                  {
+                                    'label': 'Profession',
+                                    'value': userDetails.profession ?? ''
+                                  },
+                                  {
+                                    'label': 'Education',
+                                    'value': userDetails.education ?? ''
+                                  },
                                   {
                                     'label': 'Height',
-                                    'value': userDetails.height != null ? userDetails.height!.toStringAsFixed(1) : ''
+                                    'value': userDetails.height != null
+                                        ? userDetails.height!.toStringAsFixed(1)
+                                        : ''
                                   },
-                                  {'label': 'Exercise', 'value': userDetails.exercise ?? ''},
-                                  {'label': 'Drinks', 'value': userDetails.drinks ?? ''},
-                                  {'label': 'Smoke', 'value': userDetails.smoke ?? ''},
-                                  {'label': 'Kids', 'value': userDetails.kids ?? ''},
-                                  {'label': 'Religion', 'value': userDetails.religion ?? ''},
-                                ].where((detail) => detail['value']!.isNotEmpty).toList();
+                                  {
+                                    'label': 'Exercise',
+                                    'value': userDetails.exercise ?? ''
+                                  },
+                                  {
+                                    'label': 'Drinks',
+                                    'value': userDetails.drinks ?? ''
+                                  },
+                                  {
+                                    'label': 'Smoke',
+                                    'value': userDetails.smoke ?? ''
+                                  },
+                                  {
+                                    'label': 'Kids',
+                                    'value': userDetails.kids ?? ''
+                                  },
+                                  {
+                                    'label': 'Religion',
+                                    'value': userDetails.religion ?? ''
+                                  },
+                                ]
+                                    .where(
+                                        (detail) => detail['value']!.isNotEmpty)
+                                    .toList();
                               }
 
                               List<Widget> combinedWidgets = [];
-                              int maxLength = photos.length > details.length ? photos.length : details.length;
+                              int maxLength = photos.length > details.length
+                                  ? photos.length
+                                  : details.length;
                               for (int i = 0; i < maxLength; i++) {
                                 if (i < photos.length) {
-                                  combinedWidgets.add(_buildPhotoWidget(photos[i], extraPhotoHeight));
+                                  combinedWidgets.add(_buildPhotoWidget(
+                                      photos[i], extraPhotoHeight));
                                 }
                                 if (i < details.length) {
                                   combinedWidgets.add(_buildDetailRow(
@@ -477,7 +542,8 @@ class _SwipeCardsState extends State<SwipeCards> {
                   ),
                 ),
               ),
-              SliverToBoxAdapter(child: SizedBox(height: ThemeConstant.largePadding)),
+              SliverToBoxAdapter(
+                  child: SizedBox(height: ThemeConstant.largePadding)),
             ],
           ),
         );
@@ -493,8 +559,12 @@ class _SwipeCardsState extends State<SwipeCards> {
         }
         if (currentIndex != null && currentIndex < widget.users.length) {
           _currentIndex = currentIndex;
-          context.read<UserDetailsBloc>().add(FetchUserDetails(widget.users[currentIndex].id));
-          context.read<PhotosBloc>().add(FetchPhotos(widget.users[currentIndex].id));
+          context
+              .read<UserDetailsBloc>()
+              .add(FetchUserDetails(widget.users[currentIndex].id));
+          context
+              .read<PhotosBloc>()
+              .add(FetchPhotos(widget.users[currentIndex].id));
         } else {
           setState(() {
             _allCardsSwiped = true;
@@ -502,7 +572,8 @@ class _SwipeCardsState extends State<SwipeCards> {
         }
         return true;
       },
-      allowedSwipeDirection: const AllowedSwipeDirection.symmetric(horizontal: true),
+      allowedSwipeDirection:
+          const AllowedSwipeDirection.symmetric(horizontal: true),
     );
   }
 
@@ -536,7 +607,8 @@ class _SwipeCardsState extends State<SwipeCards> {
     );
   }
 
-  Widget _buildDetailRow(ThemeData theme, IconData icon, String label, String value) {
+  Widget _buildDetailRow(
+      ThemeData theme, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: ThemeConstant.mediumPadding),
       child: Row(
@@ -553,7 +625,8 @@ class _SwipeCardsState extends State<SwipeCards> {
               children: [
                 Text(
                   label,
-                  style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                  style: theme.textTheme.bodyLarge
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 Text(
                   value,
@@ -602,8 +675,6 @@ class _SwipeCardsState extends State<SwipeCards> {
         return Icons.person;
     }
   }
-
-
 
   int _calculateAge(String birthDate) {
     try {

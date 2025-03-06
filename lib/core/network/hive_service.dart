@@ -3,7 +3,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:softwarica_student_management_bloc/app/constants/hive_table_constant.dart';
 import 'package:softwarica_student_management_bloc/features/auth/data/model/auth_hive_model.dart';
+import 'package:softwarica_student_management_bloc/features/home/data/model/user_hive_model.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/data/model/user_details_hive_model.dart';
+import 'package:softwarica_student_management_bloc/features/user_details/domain/entity/user_details_entity.dart';
 
 class HiveService {
   Future<void> init() async {
@@ -14,6 +16,7 @@ class HiveService {
 
     // Register Adapters
     Hive.registerAdapter(AuthHiveModelAdapter());
+    Hive.registerAdapter(UserHiveModelAdapter());
     Hive.registerAdapter(UserDetailsHiveModelAdapter());
   }
 
@@ -90,24 +93,23 @@ class HiveService {
   }
 
   Future<List<AuthHiveModel>> getAllAuth() async {
-    try {
-      var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
-      final users = box.values.toList();
-      print('Fetched ${users.length} users from Hive');
-      await box.close();
-      return users;
-    } catch (e) {
-      print('Error fetching all users from Hive: $e');
-      rethrow;
-    }
+  try {
+    var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
+    final users = box.values.toList();
+    print('Fetched ${users.length} users from Hive');
+    await box.close();
+    return users;
+  } catch (e) {
+    print('Error fetching all users from Hive: $e');
+    rethrow;
   }
+}
 
   Future<AuthHiveModel?> login(String userName, String password) async {
     try {
       var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
       final user = box.values.firstWhere(
-        (element) =>
-            element.userName == userName && element.password == password,
+        (element) => element.userName == userName && element.password == password,
         orElse: () => throw Exception('Invalid credentials'),
       );
       print('User logged in from Hive: ${user.userId}');
@@ -119,11 +121,37 @@ class HiveService {
     }
   }
 
+  // User Queries for Home Feature
+  Future<void> addUser(UserHiveModel user) async {
+    try {
+      var box = await Hive.openBox<UserHiveModel>(HiveTableConstant.userHomeBox);
+      print('Adding user to Hive: ${user.toJson()}');
+      await box.put(user.id, user);
+      print('User added to Hive: ${user.id}');
+      await box.close();
+    } catch (e) {
+      print('Error adding user to Hive: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<UserHiveModel>> getAllUsers() async {
+    try {
+      var box = await Hive.openBox<UserHiveModel>(HiveTableConstant.userHomeBox);
+      final users = box.values.toList();
+      print('Fetched ${users.length} users from Hive');
+      await box.close();
+      return users;
+    } catch (e) {
+      print('Error fetching all users from Hive: $e');
+      rethrow;
+    }
+  }
+
   // User Details Queries
   Future<void> addUserDetails(UserDetailsHiveModel userDetails) async {
     try {
-      var box = await Hive.openBox<UserDetailsHiveModel>(
-          HiveTableConstant.userDetailsBox);
+      var box = await Hive.openBox<UserDetailsHiveModel>(HiveTableConstant.userDetailsBox);
       print('Adding user details to Hive: ${userDetails.toJson()}');
       await box.put(userDetails.userId, userDetails);
       print('User details added to Hive: ${userDetails.userId}');
@@ -136,13 +164,15 @@ class HiveService {
 
   Future<UserDetailsHiveModel?> getUserDetails(String userId) async {
     try {
-      var box = await Hive.openBox<UserDetailsHiveModel>(
-          HiveTableConstant.userDetailsBox);
-      final userDetails = box.get(userId);
+      var box = await Hive.openBox<UserDetailsHiveModel>(HiveTableConstant.userDetailsBox);
+      var userDetails = box.get(userId);
       if (userDetails != null) {
         print('User details fetched from Hive: ${userDetails.toJson()}');
       } else {
         print('No user details found in Hive for userId: $userId');
+        final entity = UserDetailsEntity(userId: userId);
+        userDetails = UserDetailsHiveModel.fromEntity(entity);
+        await addUserDetails(userDetails);
       }
       await box.close();
       return userDetails;
@@ -156,6 +186,7 @@ class HiveService {
     try {
       await Hive.deleteBoxFromDisk(HiveTableConstant.userBox);
       await Hive.deleteBoxFromDisk(HiveTableConstant.userDetailsBox);
+      await Hive.deleteBoxFromDisk(HiveTableConstant.userHomeBox);
       print('Cleared all data from Hive');
     } catch (e) {
       print('Error clearing all data from Hive: $e');

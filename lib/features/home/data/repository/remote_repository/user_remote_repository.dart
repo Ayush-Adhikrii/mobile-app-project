@@ -11,7 +11,7 @@ class UserRemoteRepository implements IUserRepository {
 
   UserRemoteRepository(this.remoteDataSource);
 
-  @override
+  @override 
   Future<Either<Failure, List<UserEntity>>> getUsers() async {
     try {
       final users = await remoteDataSource.getUsers();

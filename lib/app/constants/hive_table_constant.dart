@@ -12,4 +12,8 @@ class HiveTableConstant {
   //preference table
   static const int preferenceTableId = 2;
   static const String preferenceBox = 'preferenceBox';
+
+  //user table
+  static const int userHomeTableId = 3;
+  static const String userHomeBox = 'userHomeBox';
 }

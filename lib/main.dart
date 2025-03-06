@@ -7,7 +7,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await HiveService().init();
 
-  await HiveService().clearUserBox();
 
   await initDependencies();
 

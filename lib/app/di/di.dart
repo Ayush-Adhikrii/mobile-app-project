@@ -62,6 +62,9 @@ import 'package:softwarica_student_management_bloc/features/user_details/domain/
 import 'package:softwarica_student_management_bloc/features/user_details/domain/use_case/update_user_details_use_case.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/presentation/view_model/bloc/user_details_bloc.dart';
 
+import '../../features/home/data/data_source/local_datasource/user_local_datasource.dart';
+import '../../features/home/data/repository/local_repository/user_local_repository.dart';
+import '../../features/home/data/repository/user_repository_impl.dart';
 import '../../features/user_details/data/data_source/local_data_source/user_details_local_data_source.dart';
 import '../../features/user_details/data/repository/user_details_repository_impl.dart';
 
@@ -237,12 +240,36 @@ Future<void> _initUserDetailsDependencies() async {
 Future<void> _initUserProfileDependencies() async {
   getIt.registerLazySingleton(() => SocketService());
 
+  // Register UserRemoteDataSource
   getIt.registerLazySingleton<UserRemoteDataSource>(
     () => UserRemoteDataSourceImpl(getIt<Dio>()),
   );
-  getIt.registerLazySingleton<IUserRepository>(
+
+  // Register UserLocalDataSource
+  getIt.registerLazySingleton<UserLocalDataSource>(
+    () => UserLocalDataSource(getIt<HiveService>()),
+  );
+
+  // Register UserRemoteRepository
+  getIt.registerLazySingleton<UserRemoteRepository>(
     () => UserRemoteRepository(getIt<UserRemoteDataSource>()),
   );
+
+  // Register UserLocalRepository
+  getIt.registerLazySingleton<UserLocalRepository>(
+    () => UserLocalRepository(getIt<UserLocalDataSource>()),
+  );
+
+  // Register UserRepositoryImpl as the main IUserRepository
+  getIt.registerLazySingleton<IUserRepository>(
+    () => UserRepositoryImpl(
+      remoteRepository: getIt<UserRemoteRepository>(),
+      localRepository: getIt<UserLocalRepository>(),
+      connectivityService: getIt<ConnectivityService>(),
+    ),
+  );
+
+  // Register Use Cases
   getIt.registerLazySingleton<GetUsersUseCase>(
     () => GetUsersUseCase(getIt<IUserRepository>()),
   );
@@ -255,6 +282,8 @@ Future<void> _initUserProfileDependencies() async {
   getIt.registerLazySingleton<SwipeRightUseCase>(
     () => SwipeRightUseCase(getIt<IUserRepository>()),
   );
+
+  // Register UserBloc
   getIt.registerFactory<UserBloc>(
     () => UserBloc(
       fetchUsersUseCase: getIt<GetUsersUseCase>(),

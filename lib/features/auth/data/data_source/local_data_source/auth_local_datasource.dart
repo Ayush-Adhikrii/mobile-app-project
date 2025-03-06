@@ -1,9 +1,10 @@
 import 'dart:io';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:softwarica_student_management_bloc/core/network/hive_service.dart';
+import 'package:softwarica_student_management_bloc/features/auth/data/data_source/auth_data_source.dart';
 import 'package:softwarica_student_management_bloc/features/auth/data/model/auth_hive_model.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
-import 'package:softwarica_student_management_bloc/features/auth/data/data_source/auth_data_source.dart';
 
 class AuthLocalDataSource implements IAuthDataSource {
   final HiveService _hiveService;
@@ -24,7 +25,8 @@ class AuthLocalDataSource implements IAuthDataSource {
   }
 
   @override
-  Future<(String, AuthEntity)> loginUser(String userName, String password) async {
+  Future<(String, AuthEntity)> loginUser(
+      String userName, String password) async {
     try {
       final userModel = await _hiveService.login(userName, password);
       // Store the userId in SharedPreferences to track the current user

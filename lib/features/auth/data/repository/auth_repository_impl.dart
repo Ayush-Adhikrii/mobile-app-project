@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:softwarica_student_management_bloc/core/error/failure.dart';
 import 'package:softwarica_student_management_bloc/core/network/connectivity_service.dart';
+import 'package:softwarica_student_management_bloc/features/auth/data/repository/auth_local_repository/auth_local_repository.dart';
+import 'package:softwarica_student_management_bloc/features/auth/data/repository/auth_remote_repository/auth_remote_repository.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/entity/auth_entity.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/repository/auth_repository.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/use_case/update_profile_photo_use_case.dart';
 import 'package:softwarica_student_management_bloc/features/auth/domain/use_case/update_profile_usecase.dart';
-import 'package:softwarica_student_management_bloc/features/auth/data/repository/auth_local_repository/auth_local_repository.dart';
-import 'package:softwarica_student_management_bloc/features/auth/data/repository/auth_remote_repository/auth_remote_repository.dart';
 
 class AuthRepositoryImpl implements IAuthRepository {
   final AuthRemoteRepository remoteRepository;
@@ -31,7 +31,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, String>> loginUser(String email, String password) async {
+  Future<Either<Failure, String>> loginUser(
+      String email, String password) async {
     if (connectivityService.isConnected) {
       return await remoteRepository.loginUser(email, password);
     } else {
@@ -53,12 +54,15 @@ class AuthRepositoryImpl implements IAuthRepository {
     if (connectivityService.isConnected) {
       return await remoteRepository.uploadProfilePicture(file);
     } else {
-      return Left(LocalDatabaseFailure(message: 'No internet connection: Profile picture upload not supported offline'));
+      return Left(LocalDatabaseFailure(
+          message:
+              'No internet connection: Profile picture upload not supported offline'));
     }
   }
 
   @override
-  Future<Either<Failure, AuthEntity>> updateProfile(UpdateProfileParams params) async {
+  Future<Either<Failure, AuthEntity>> updateProfile(
+      UpdateProfileParams params) async {
     if (connectivityService.isConnected) {
       return await remoteRepository.updateProfile(params);
     } else {
@@ -67,7 +71,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, AuthEntity>> uploadProfilePhoto(UploadProfilePhotoParams params) async {
+  Future<Either<Failure, AuthEntity>> uploadProfilePhoto(
+      UploadProfilePhotoParams params) async {
     if (connectivityService.isConnected) {
       return await remoteRepository.uploadProfilePhoto(params);
     } else {
