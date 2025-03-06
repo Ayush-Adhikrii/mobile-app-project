@@ -28,7 +28,7 @@ class UserDetailsHiveModel extends Equatable {
   final String? religion;
 
   const UserDetailsHiveModel({
-    required this.userId, // Changed to required
+    required this.userId,
     this.profession,
     this.education,
     this.height,
@@ -67,6 +67,20 @@ class UserDetailsHiveModel extends Equatable {
       kids: kids,
       religion: religion,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'profession': profession,
+      'education': education,
+      'height': height,
+      'exercise': exercise,
+      'drinks': drinks,
+      'smoke': smoke,
+      'kids': kids,
+      'religion': religion,
+    };
   }
 
   @override

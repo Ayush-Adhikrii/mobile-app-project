@@ -1,4 +1,3 @@
-// lib/features/user_details/presentation/view_model/bloc/user_details_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../app/di/di.dart';
@@ -20,17 +19,22 @@ class UserDetailsBloc extends Bloc<UserDetailsEvent, UserDetailsState> {
       emit(const UserDetailsLoading());
       final result = await getUserDetailsUseCase(userId: event.userId);
       emit(result.fold(
-        (failure) => UserDetailsError(failure.message),
+        (failure) => UserDetailsError(
+          failure.message,
+          isOffline: failure.message.contains('local storage'),
+        ),
         (userDetails) => UserDetailsLoaded(userDetails),
       ));
     });
 
     on<UpdateUserDetails>((event, emit) async {
       emit(const UserDetailsLoading());
-      final result =
-          await updateUserDetailsUseCase(event.userId, event.key, event.value);
+      final result = await updateUserDetailsUseCase(event.userId, event.key, event.value);
       emit(result.fold(
-        (failure) => UserDetailsError(failure.message),
+        (failure) => UserDetailsError(
+          failure.message,
+          isOffline: failure.message.contains('local storage'),
+        ),
         (_) {
           // Simply refetch details without navigation
           final currentUserId = getIt<LoginBloc>().state.authUser?.userId ?? '';

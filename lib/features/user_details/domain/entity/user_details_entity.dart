@@ -34,6 +34,44 @@ class UserDetailsEntity extends Equatable {
         kids = 'empty_kids',
         religion = 'empty_religion';
 
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'profession': profession,
+      'education': education,
+      'height': height,
+      'exercise': exercise,
+      'drinks': drinks,
+      'smoke': smoke,
+      'kids': kids,
+      'religion': religion,
+    };
+  }
+
+  UserDetailsEntity copyWith({
+    String? userId,
+    String? profession,
+    String? education,
+    double? height,
+    String? exercise,
+    String? drinks,
+    String? smoke,
+    String? kids,
+    String? religion,
+  }) {
+    return UserDetailsEntity(
+      userId: userId ?? this.userId,
+      profession: profession ?? this.profession,
+      education: education ?? this.education,
+      height: height ?? this.height,
+      exercise: exercise ?? this.exercise,
+      drinks: drinks ?? this.drinks,
+      smoke: smoke ?? this.smoke,
+      kids: kids ?? this.kids,
+      religion: religion ?? this.religion,
+    );
+  }
+
   @override
   List<Object?> get props => [
         userId,

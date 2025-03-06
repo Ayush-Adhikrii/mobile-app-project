@@ -55,11 +55,15 @@ import 'package:softwarica_student_management_bloc/features/subscription/domain/
 import 'package:softwarica_student_management_bloc/features/subscription/domain/usecases/save_subscription.dart';
 import 'package:softwarica_student_management_bloc/features/subscription/presentation/view_model/bloc/subscription_bloc.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/data/data_source/remote_data_source/user_details_remote_data_source.dart';
+import 'package:softwarica_student_management_bloc/features/user_details/data/repository/auth_local_repository/user_details_local_repository.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/data/repository/auth_remote_repository/user_details_remote_repository.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/domain/repository/user_details_repository.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/domain/use_case/get_user_details_use_case.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/domain/use_case/update_user_details_use_case.dart';
 import 'package:softwarica_student_management_bloc/features/user_details/presentation/view_model/bloc/user_details_bloc.dart';
+
+import '../../features/user_details/data/data_source/local_data_source/user_details_local_data_source.dart';
+import '../../features/user_details/data/repository/user_details_repository_impl.dart';
 
 final getIt = GetIt.instance;
 
@@ -190,10 +194,27 @@ Future<void> _initUserDetailsDependencies() async {
   getIt.registerLazySingleton<UserDetailsRemoteDataSource>(
     () => UserDetailsRemoteDataSource(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<UserDetailsLocalDataSource>(
+    () => UserDetailsLocalDataSource(getIt<HiveService>()),
+  );
 
   // =========================== Repository ===========================
   getIt.registerLazySingleton<IUserDetailsRepository>(
-    () => UserDetailsRepositoryImpl(getIt<UserDetailsRemoteDataSource>()),
+    () => UserDetailsRepositoryImpl(
+      remoteRepository: getIt<UserDetailsRemoteRepository>(),
+      localRepository: getIt<UserDetailsLocalRepository>(),
+      connectivityService: getIt<ConnectivityService>(),
+    ),
+  );
+
+  // Local
+  getIt.registerLazySingleton<UserDetailsLocalRepository>(
+    () => UserDetailsLocalRepository(getIt<UserDetailsLocalDataSource>()),
+  );
+  // Remote
+  getIt.registerLazySingleton<UserDetailsRemoteRepository>(
+    () => UserDetailsRemoteRepository(getIt<UserDetailsRemoteDataSource>(),
+        getIt<UserDetailsLocalDataSource>()),
   );
 
   // =========================== Use Cases ===========================

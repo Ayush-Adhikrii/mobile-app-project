@@ -80,4 +80,9 @@ class UserDetailsApiModel extends Equatable {
         kids,
         religion,
       ];
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }

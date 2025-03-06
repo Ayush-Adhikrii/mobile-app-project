@@ -106,7 +106,8 @@ class HiveService {
     try {
       var box = await Hive.openBox<AuthHiveModel>(HiveTableConstant.userBox);
       final user = box.values.firstWhere(
-        (element) => element.userName == userName && element.password == password,
+        (element) =>
+            element.userName == userName && element.password == password,
         orElse: () => throw Exception('Invalid credentials'),
       );
       print('User logged in from Hive: ${user.userId}');
@@ -118,9 +119,43 @@ class HiveService {
     }
   }
 
+  // User Details Queries
+  Future<void> addUserDetails(UserDetailsHiveModel userDetails) async {
+    try {
+      var box = await Hive.openBox<UserDetailsHiveModel>(
+          HiveTableConstant.userDetailsBox);
+      print('Adding user details to Hive: ${userDetails.toJson()}');
+      await box.put(userDetails.userId, userDetails);
+      print('User details added to Hive: ${userDetails.userId}');
+      await box.close();
+    } catch (e) {
+      print('Error adding user details to Hive: $e');
+      rethrow;
+    }
+  }
+
+  Future<UserDetailsHiveModel?> getUserDetails(String userId) async {
+    try {
+      var box = await Hive.openBox<UserDetailsHiveModel>(
+          HiveTableConstant.userDetailsBox);
+      final userDetails = box.get(userId);
+      if (userDetails != null) {
+        print('User details fetched from Hive: ${userDetails.toJson()}');
+      } else {
+        print('No user details found in Hive for userId: $userId');
+      }
+      await box.close();
+      return userDetails;
+    } catch (e) {
+      print('Error fetching user details from Hive: $e');
+      rethrow;
+    }
+  }
+
   Future<void> clearAll() async {
     try {
       await Hive.deleteBoxFromDisk(HiveTableConstant.userBox);
+      await Hive.deleteBoxFromDisk(HiveTableConstant.userDetailsBox);
       print('Cleared all data from Hive');
     } catch (e) {
       print('Error clearing all data from Hive: $e');
@@ -134,48 +169,6 @@ class HiveService {
       print('Cleared user box from Hive');
     } catch (e) {
       print('Error clearing user box from Hive: $e');
-      rethrow;
-    }
-  }
-
-  // User Details Queries
-  Future<void> addUserDetails(UserDetailsHiveModel userDetails) async {
-    try {
-      final box = await Hive.openBox<UserDetailsHiveModel>('userDetailsBox');
-      await box.put(userDetails.userId, userDetails);
-      print('User details added to Hive: ${userDetails.userId}');
-      await box.close();
-    } catch (e) {
-      print('Error adding user details to Hive: $e');
-      rethrow;
-    }
-  }
-
-  Future<UserDetailsHiveModel?> getUserDetails() async {
-    try {
-      final box = await Hive.openBox<UserDetailsHiveModel>('userDetailsBox');
-      if (box.isNotEmpty) {
-        final userDetails = box.values.first;
-        print('User details fetched from Hive: ${userDetails.userId}');
-        await box.close();
-        return userDetails;
-      } else {
-        print('No user details found in Hive');
-        await box.close();
-        return null;
-      }
-    } catch (e) {
-      print('Error getting user details from Hive: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> close() async {
-    try {
-      await Hive.close();
-      print('Hive database closed');
-    } catch (e) {
-      print('Error closing Hive database: $e');
       rethrow;
     }
   }

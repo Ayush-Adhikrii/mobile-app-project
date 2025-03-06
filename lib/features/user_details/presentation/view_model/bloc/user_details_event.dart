@@ -1,4 +1,3 @@
-// lib/features/user_details/presentation/view_model/bloc/user_details_event.dart
 import 'package:equatable/equatable.dart';
 
 abstract class UserDetailsEvent extends Equatable {

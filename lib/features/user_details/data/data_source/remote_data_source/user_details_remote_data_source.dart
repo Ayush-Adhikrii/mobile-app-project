@@ -2,14 +2,9 @@ import 'package:dio/dio.dart';
 
 import '../../../../../app/constants/api_endpoints.dart';
 import '../../model/user_details_api_model.dart';
+import '../user_details_data_source.dart';
 
-abstract class IUserDetailsDataSource {
-  Future<void> addUserDetails(UserDetailsApiModel details);
-  Future<UserDetailsApiModel> getUserDetails(String userId);
-  Future<void> updateUserDetails(String userId, String key, String value);
-}
-
-class UserDetailsRemoteDataSource implements IUserDetailsDataSource {
+class UserDetailsRemoteDataSource implements IUserDetailsRemoteDataSource {
   final Dio _dio;
 
   UserDetailsRemoteDataSource(this._dio);
@@ -52,22 +47,18 @@ class UserDetailsRemoteDataSource implements IUserDetailsDataSource {
   }
 
   @override
-  Future<void> updateUserDetails(
-      String userId, String key, String value) async {
+  Future<void> updateUserDetails(String userId, String key, String value) async {
     try {
       final response = await _dio.put(
-        "${ApiEndpoints.updateUserDetails}/$userId", // Updated endpoint with userId
+        "${ApiEndpoints.updateUserDetails}/$userId",
         data: {key: value},
       );
-      print(
-          'updateUserDetails response: ${response.statusCode}, ${response.data}');
+      print('updateUserDetails response: ${response.statusCode}, ${response.data}');
       if (response.statusCode != 200) {
-        throw Exception(
-            "Failed to update user details: ${response.statusMessage}");
+        throw Exception("Failed to update user details: ${response.statusMessage}");
       }
     } on DioException catch (e) {
-      print(
-          'DioException in updateUserDetails: ${e.message}, Response: ${e.response?.data}');
+      print('DioException in updateUserDetails: ${e.message}, Response: ${e.response?.data}');
       throw Exception("Dio error updating user details: ${e.message}");
     } catch (e) {
       print('Unexpected error in updateUserDetails: $e');

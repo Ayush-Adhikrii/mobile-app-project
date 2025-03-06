@@ -1,4 +1,3 @@
-// lib/features/user_details/presentation/view_model/bloc/user_details_state.dart
 import 'package:equatable/equatable.dart';
 import '../../../domain/entity/user_details_entity.dart';
 
@@ -28,9 +27,10 @@ class UserDetailsLoaded extends UserDetailsState {
 
 class UserDetailsError extends UserDetailsState {
   final String message;
+  final bool isOffline;
 
-  const UserDetailsError(this.message);
+  const UserDetailsError(this.message, {this.isOffline = false});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, isOffline];
 }
